@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Enhanced Notes Organizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#ffffff; --muted:#6b7280; --accent:#6366f1;
+      --radius:10px; --shadow:0 6px 18px rgba(15,23,42,0.08);
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f6f8fb 0%, #eef2ff 100%);margin:0;padding:24px;color:#0f172a}
+    .app{max-width:1200px;margin:0 auto}
+    header.app-header{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .brand{font-weight:700;font-size:20px;color:var(--accent)}
+    .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+    input.search{padding:8px 12px;border-radius:8px;border:1px solid #e6e9ef;min-width:260px}
+    button{background:var(--card);border:1px solid #e6e9ef;padding:8px 10px;border-radius:8px;cursor:pointer}
+    button.primary{background:var(--accent);color:#fff;border:none;box-shadow:0 6px 18px rgba(99,102,241,0.18)}
+    .board{display:flex;gap:18px;align-items:flex-start}
+    .column{width:280px;background:linear-gradient(180deg,#ffffff,#fcfdff);border-radius:12px;padding:12px;box-shadow:var(--shadow);border:1px solid rgba(15,23,42,0.04)}
+    .column-title{font-weight:600;margin:0 0 8px 0;color:#0f172a}
+    .column-tools{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+    .notes{min-height:40px}
+    .note{background:var(--card);border-radius:10px;padding:8px;border:1px solid rgba(15,23,42,0.04);margin-bottom:10px;box-shadow:0 2px 8px rgba(2,6,23,0.04);position:relative}
+    .note .note-header{display:flex;align-items:center;gap:8px;font-weight:600}
+    .note .note-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+    .note .note-content{margin-top:8px;max-height:140px;overflow:auto;padding-right:6px;white-space:pre-wrap;color:#111827}
+    .note.collapsed .note-content{display:none}
+    .label-badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;background:#eef2ff;color:#1e3a8a;border:1px solid rgba(30,58,138,0.06)}
+    .label-swatch{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px}
+    .note.dragging{opacity:0.85;transform:scale(0.995)}
+    .placeholder{border:2px dashed rgba(99,102,241,0.2);height:64px;margin-bottom:10px;border-radius:8px}
+    .note input.header-edit, .note textarea.content-edit{width:100%;border:none;background:transparent;outline:none;font-family:inherit}
+    .note textarea.content-edit{min-height:60px}
+    .add-row{display:flex;gap:6px;margin-top:6px}
+    .add-row input, .add-row select{flex:1;padding:8px;border-radius:8px;border:1px solid #e6e9ef}
+    footer.app-footer{margin-top:18px;display:flex;gap:8px;align-items:center}
+    .toast{position:fixed;right:24px;bottom:24px;padding:12px 16px;background:#111827;color:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.3)}
+    .controls button.small{padding:6px 8px;font-size:13px}
+    .muted{color:var(--muted);font-size:13px}
+    /* label colors */
+    .label-important{background:#fff0f0;color:#991b1b;border:1px solid rgba(153,27,27,0.06)}
+    .label-idea{background:#f4efff;color:#5b21b6;border:1px solid rgba(91,33,182,0.06)}
+    .label-default{background:#f0f9ff;color:#075985;border:1px solid rgba(7,89,133,0.06)}
+    .label-personal{background:#f0fdf4;color:#065f46;border:1px solid rgba(6,95,70,0.06)}
+    .label-reference{background:#f0f7ff;color:#1e3a8a;border:1px solid rgba(30,58,138,0.06)}
+    .label-study{background:#f7fee7;color:#365314;border:1px solid rgba(54,83,20,0.06)}
+    .small-muted{font-size:12px;color:#6b7280}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">Enhanced Notes Organizer</div>
+      <div class="muted">(Drag & drop · Labels · Search · Import/Export · Undo)</div>
+      <div class="controls">
+        <input class="search" placeholder="Search notes..." />
+        <button id="btn-import">Import</button>
+        <input type="file" id="file-input" accept="application/json" style="display:none">
+        <button id="btn-export" class="small">Export</button>
+        <button id="btn-reset" class="small">Reset</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="board" id="board">
+        <!-- columns inserted here -->
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <div class="small-muted">Tip: Double-click a header or content to edit inline. Click the color badge to change label.</div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button id="btn-undo">Undo Delete</button>
+        <button id="btn-download" class="primary">Download Exported JSON</button>
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" style="display:none"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js"></script>
+  <script>
+    // Embedded fallback JSON (matches example-layout.json so app initializes correctly even without fetch)
+    const embeddedLayout = {
+      "columns": [
+        {"id":"col-1","notes":[{"header":"📌 Today's Tasks","content":"- Reply to customer emails (urgent)\n- Finalize the prototype for the new dashboard\n- Design review at 3 PM\n- Update weekly team status\n\nReminder: Align the goals for this sprint before Thursday.","label":"important"},{"header":"💡 Random Idea","content":"Maybe we should explore adding a Quick Actions panel on the homepage to reduce multi-step navigation. Conduct user interviews to validate the need.","label":"idea"}]},
+        {"id":"col-2","notes":[{"header":"📝 Meeting Notes — Feb 17, 2025","content":"Attendees: Product, Design, Engineering\nTopic: Clarifying requirements for the new Task Center\n\nKey Agreements:\n1. MVP will not include cross-project linking.\n2. Must support list and board views for launch.\n3. Notification redesign postponed to Q2.\n\nAction Items:\n- Product: Update requirements doc.\n- Design: Provide two interaction concepts by next week.\n- Engineering: Estimate development effort by Wednesday.","label":"default"}]},
+        {"id":"col-3","notes":[{"header":"🛒 Grocery List","content":"• Milk (2 cartons)\n• Eggs (dozen)\n• Whole grain bread\n• Orange juice\n• Cat food (large bag)\n• Vitamin C — keep forgetting to buy this","label":"personal"},{"header":"🔗 Useful Links","content":"1. Color palette generator: https://coolors.co\n2. Free stock photos: https://unsplash.com\n3. Tech blog: https://overreacted.io","label":"reference"},{"header":"📚 Reading Notes: Deep Work","content":"Key Takeaways:\n- Deep work produces disproportionate value.\n- Reduce fragmented time and build deliberate workflows.\n\nQuote:\n\"The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.\"","label":"study"}]}
+      ]
+    };
+
+    const LABELS = {
+      important:{name:'important',class:'label-important',color:'#fee2e2'},
+      idea:{name:'idea',class:'label-idea',color:'#f3e8ff'},
+      default:{name:'default',class:'label-default',color:'#eff6ff'},
+      personal:{name:'personal',class:'label-personal',color:'#ecfdf5'},
+      reference:{name:'reference',class:'label-reference',color:'#f0f7ff'},
+      study:{name:'study',class:'label-study',color:'#f7fee7'}
+    };
+
+    let layout = null; // current layout
+    let lastDeleted = null; // for undo
+
+    function showToast(msg, timeout=3000){
+      $('#toast').text(msg).fadeIn(150);
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(()=>$('#toast').fadeOut(200), timeout);
+    }
+
+    function renderBoard(fromLayout){
+      const $board = $('#board'); $board.empty();
+      layout = fromLayout;
+      layout.columns.forEach((col, cIdx)=>{
+        const $col = $(`<div class="column" data-id="${col.id}"></div>`);
+        $col.append(`<div class="column-title">${col.title||('Column '+(cIdx+1))}</div>`);
+        const $tools = $(`<div class="column-tools"><span class="small-muted">${col.id}</span></div>`);
+        $tools.append(`<button class="small btn-add" data-col="${col.id}">+ Add</button>`);
+        $col.append($tools);
+        const $notes = $(`<div class="notes" data-col="${col.id}"></div>`);
+        col.notes.forEach(note=>{ $notes.append(createNoteElement(note)); });
+        $col.append($notes);
+        $col.append(`<div class="add-row" style="display:none"><input class="add-title" placeholder="Title"><select class="add-label"><option value="default">default</option><option value="important">important</option><option value="idea">idea</option><option value="personal">personal</option><option value="reference">reference</option><option value="study">study</option></select><button class="btn-add-save">Add</button></div>`);
+        $board.append($col);
+      });
+      enableInteractions();
+    }
+
+    function createNoteElement(note){
+      const labelClass = LABELS[note.label]?('label-'+note.label):'label-default';
+      const $n = $(`<div class="note" data-label="${note.label||'default'}">
+        <div class="note-header">
+          <span class="label-swatch" title="Label"></span>
+          <div class="hdr-text" title="Double-click to edit">${escapeHtml(note.header||'Untitled')}</div>
+          <div class="note-actions">
+            <button class="btn-collapse" title="Collapse/Expand">▾</button>
+            <button class="btn-edit" title="Edit">✎</button>
+            <button class="btn-delete" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="note-content">${escapeHtml(note.content||'')}</div>
+      </div>`);
+      applyLabelStyling($n, note.label);
+      // attach data
+      $n.data('note',{header:note.header,content:note.content,label:note.label});
+      return $n;
+    }
+
+    function applyLabelStyling($note, label){
+      const lbl = label||'default';
+      $note.attr('data-label',lbl);
+      const sw = $note.find('.label-swatch');
+      const cssClass = LABELS[lbl]?LABELS[lbl].class:'label-default';
+      sw.css('background', LABELS[lbl]?LABELS[lbl].color:'#eff6ff');
+      $note.find('.note-header').removeClass('label-important label-idea label-default label-personal label-reference label-study').addClass(cssClass);
+      // badge text?
+    }
+
+    function enableInteractions(){
+      // sortable
+      $('.notes').sortable({
+        connectWith: '.notes',
+        placeholder: 'placeholder',
+        handle: '.note-header',
+        start:function(e,ui){ui.item.addClass('dragging')},
+        stop:function(e,ui){ui.item.removeClass('dragging'); saveLayoutFromDOM();}
+      }).disableSelection();
+
+      // collapse
+      $('.btn-collapse').off('click').on('click',function(){
+        const $note = $(this).closest('.note'); $note.toggleClass('collapsed');
+      });
+
+      // delete
+      $('.btn-delete').off('click').on('click',function(){
+        const $note = $(this).closest('.note');
+        const noteData = readNoteFromElement($note);
+        const colId = $note.closest('.notes').data('col');
+        // remove from DOM
+        $note.fadeOut(150,function(){ $(this).remove(); saveLayoutFromDOM(); });
+        lastDeleted = {note:noteData,col:colId,removedAt:Date.now()};
+        showToast('Note deleted — Undo available');
+      });
+
+      // edit button => focus contenteditable
+      $('.btn-edit').off('click').on('click',function(){
+        const $note = $(this).closest('.note'); startInlineEdit($note);
+      });
+
+      // double-click header / content to edit
+      $('.hdr-text').off('dblclick').on('dblclick',function(){ startInlineEdit($(this).closest('.note'), 'header') });
+      $('.note-content').off('dblclick').on('dblclick',function(){ startInlineEdit($(this).closest('.note'), 'content') });
+
+      // label swap on swatch click
+      $('.label-swatch').off('click').on('click',function(){
+        const $note = $(this).closest('.note'); showLabelMenu($note);
+      });
+
+      // add note buttons
+      $('.btn-add').off('click').on('click',function(){ const $col = $(this).closest('.column'); $col.find('.add-row').toggle(); });
+      $('.btn-add-save').off('click').on('click',function(){
+        const $row = $(this).closest('.column');
+        const title = $row.find('.add-title').val()||'New Note';
+        const label = $row.find('.add-label').val()||'default';
+        const $notes = $row.find('.notes');
+        const $el = createNoteElement({header:title,content:'',label:label});
+        $notes.append($el);
+        $row.find('.add-row').hide(); $row.find('.add-title').val(''); saveLayoutFromDOM();
+      });
+
+      // inline editing saving on blur
+      $('.note .hdr-text').attr('contenteditable',true).off('blur').on('blur',function(){ const $note=$(this).closest('.note'); updateNoteData($note); });
+      $('.note .note-content').attr('contenteditable',true).off('blur').on('blur',function(){ const $note=$(this).closest('.note'); updateNoteData($note); });
+
+      // search
+      $('input.search').off('input').on('input',function(){ filterNotes($(this).val()) });
+
+      // import/export
+      $('#btn-import').off('click').on('click',()=>$('#file-input').click());
+      $('#file-input').off('change').on('change',function(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=function(){ try{ const parsed=JSON.parse(r.result); initializeFromJSON(parsed); showToast('Imported layout'); }catch(err){alert('Invalid JSON');} }; r.readAsText(f); });
+      $('#btn-export').off('click').on('click',()=>{ const j=exportToJSON(); showToast('Exported JSON to console (and ready to download)'); console.log(JSON.stringify(j, null, 2)); });
+      $('#btn-download').off('click').on('click',()=>{ const j=exportToJSON(); const blob=new Blob([JSON.stringify(j,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='exported-layout.json'; a.click(); URL.revokeObjectURL(url); });
+      $('#btn-reset').off('click').on('click',()=>{ initializeFromJSON(embeddedLayout); showToast('Reset to initial layout'); });
+      $('#btn-undo').off('click').on('click',()=>{ if(!lastDeleted){ showToast('Nothing to undo'); return; } const colId=lastDeleted.col; const $col = $('.notes[data-col="'+colId+'"]'); const $el = createNoteElement(lastDeleted.note); $col.append($el); lastDeleted=null; saveLayoutFromDOM(); showToast('Undo successful'); });
+
+    }
+
+    function updateNoteData($note){
+      const newHdr = $note.find('.hdr-text').text();
+      const newCnt = $note.find('.note-content').text();
+      const lbl = $note.attr('data-label')||'default';
+      $note.data('note',{header:newHdr,content:newCnt,label:lbl});
+      saveLayoutFromDOM();
+    }
+
+    function saveLayoutFromDOM(){
+      const cols = [];
+      $('.column').each(function(){
+        const colId = $(this).data('id');
+        const notes = [];
+        $(this).find('.notes .note').each(function(){ const n = readNoteFromElement($(this)); notes.push(n); });
+        cols.push({id:colId,notes});
+      });
+      layout = {columns:cols};
+    }
+
+    function readNoteFromElement($el){
+      return {header: $el.find('.hdr-text').text(), content: $el.find('.note-content').text(), label: $el.attr('data-label')||'default'};
+    }
+
+    function exportToJSON(){ saveLayoutFromDOM(); return layout; }
+
+    function initializeFromJSON(json){
+      // Map JSON to our internal structure - accept both schema with 'columns' and with 'columns' having notes
+      const transformed = {columns: []};
+      (json.columns||[]).forEach((c,i)=>{
+        const col = {id:c.id||('col-'+(i+1)), title: c.title || ('Column '+(i+1)), notes: []};
+        (c.notes||[]).forEach(n=>{ col.notes.push({header:n.header||n.title||'Untitled', content:n.content||n.body||'', label:n.label||'default'}) });
+        transformed.columns.push(col);
+      });
+      renderBoard(transformed);
+    }
+
+    function filterNotes(q){
+      q = (q||'').trim().toLowerCase();
+      $('.note').each(function(){ const $n=$(this); const h=$n.find('.hdr-text').text().toLowerCase(); const c=$n.find('.note-content').text().toLowerCase(); const ok = !q || h.indexOf(q)!==-1 || c.indexOf(q)!==-1; $n.toggle(ok); });
+    }
+
+    function startInlineEdit($note, field){
+      if(!field || field==='header'){
+        $note.find('.hdr-text').focus();
+      }else{
+        $note.find('.note-content').focus();
+      }
+    }
+
+    function showLabelMenu($note){
+      // small context menu
+      const menu = $('<div class="label-menu"></div>').css({position:'absolute',zIndex:999,right:12,top:36,background:'#fff',border:'1px solid #eef2ef',padding:8,borderRadius:8,boxShadow:'0 8px 20px rgba(2,6,23,0.08)'});
+      Object.keys(LABELS).forEach(k=>{ const item = $(`<div style="padding:6px;cursor:pointer;border-radius:6px"><span style="display:inline-block;width:12px;height:12px;background:${LABELS[k].color};margin-right:8px;border-radius:3px"></span>${LABELS[k].name}</div>`); item.on('click',()=>{ applyLabelStyling($note,k); $note.attr('data-label',k); updateNoteData($note); menu.remove(); }); menu.append(item); });
+      $('.label-menu').remove(); $note.append(menu);
+      $(document).one('click',()=>$('.label-menu').remove());
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'\n'); }
+
+    // Try to fetch example-layout.json; if fail, fall back to embeddedLayout
+    document.addEventListener('DOMContentLoaded',()=>{
+      fetch('example-layout.json').then(r=>{ if(!r.ok) throw new Error('Fetch failed'); return r.json(); }).then(j=>{ initializeFromJSON(j); showToast('Loaded layout from example-layout.json',1500); }).catch(err=>{ console.warn('Could not fetch JSON; using embedded layout.', err); initializeFromJSON(embeddedLayout); });
+    });
+  </script>
+</body>
+</html>
