@@ -1,12 +1,11 @@
 You are given an existing single-page app stored in **`input.html`**, which implements a drag-and-drop note organizer using jQuery UI portlets.
-Your job is to **create two new files**:
+Your job is to generate **two new files**:
 
-1. **`enhanced.html`** — a new standalone enhanced version of the app
-2. **`README.md`** — documentation explaining the enhancements and how to use the updated app
+1. **`enhanced.html`** — a standalone enhanced version of the app
+2. **`README.md`** — documentation describing the enhancements and how to use the updated app
 
-**Important:**
-Do **not** modify `input.html`.
-Your solution must be a **new** HTML file that preserves existing functionality while adding the required improvements.
+**Do NOT modify `input.html`.**
+Your solution must be a new HTML file that keeps all existing behaviors while adding the improvements below.
 
 ---
 
@@ -14,94 +13,89 @@ Your solution must be a **new** HTML file that preserves existing functionality 
 
 `input.html` currently:
 
-* Displays multiple `.column` containers.
-* Contains draggable “portlet” boxes (`jQuery UI sortable`).
-* Each portlet has:
-
-  * a draggable header (`.portlet-header`),
-  * a content area (`.portlet-content`).
+* Shows multiple `.column` containers.
+* Contains draggable portlets (`jQuery UI sortable`).
+* Each portlet has a header (drag handle) and content area.
 * The header icon toggles content visibility.
 
-Your enhanced version must keep all of this intact.
+These behaviors must remain functional.
 
 ---
 
 # **2. Required Feature Improvements**
 
-Your new file `enhanced.html` must implement:
+Your new file **`enhanced.html`** must implement:
 
 ---
 
 ## **2.1 Add & Delete Notes**
 
-* Provide UI to add a new portlet to a chosen column.
-* New portlets must:
-
-  * be draggable,
-  * allow editing header and content,
-  * include a delete (“✕”) button.
-* They must follow improved styling.
+* UI to add new portlets to a chosen column.
+* New portlets must be draggable, editable (header + content), and include a delete (“✕”) button.
 
 ---
 
 ## **2.2 Scrollable Long Notes**
 
-* `.portlet-content` must support longer text via:
-
-  * fixed/max height,
-  * `overflow: auto`.
+* Make `.portlet-content` support long text via a fixed/max height and `overflow: auto`.
 
 ---
 
-## **2.3 Import & Export JSON**
+## **2.3 Import & Export as JSON**
 
-Add UI to:
+Provide UI to:
 
-### **Export**
-
-* Serialize the entire layout (columns + ordered portlets + header + content).
-* Allow user-specified filename.
-* Download as JSON.
-
-### **Import**
-
-* Load JSON saved earlier.
-* Rebuild the full layout.
-* Restored portlets must retain behaviors and styling.
+* **Export** the entire layout (columns + ordered portlets + header + content + label).
+* **Import** a saved JSON file and rebuild the layout, preserving all interactions.
 
 ---
 
 ## **2.4 Visual Appearance Upgrade**
 
-Improve overall aesthetics, including:
+Improve the UI so it looks modern and polished, including:
 
-* cleaner spacing, padding, alignment
-* improved colors or backgrounds
-* rounded corners, shadows, nicer borders
-* more readable typography
-* better hover / drag-handle feedback
+* better spacing and alignment
+* updated colors/backgrounds
+* improved borders, shadows, rounding
+* clearer typography
+* hover / drag feedback
 * consistent column spacing
 
-CSS may be extended or overridden but must not break sortable or toggle behavior.
+---
+
+## **2.5 Note Labels / Color Coding**
+
+* Allow assigning a label/color to each note (e.g., “Default”, “Important”, “Idea”).
+* Labels must visually change the note and be included in import/export JSON.
+
+---
+
+## **2.6 Search / Filter Notes**
+
+* Add a search bar that filters notes in real time by header or content text.
+
+---
+
+## **2.7 Undo Last Delete**
+
+* Support undoing the most recently deleted note (restore data and interactions).
 
 ---
 
 # **3. Output Requirements**
 
-Your final answer must include:
-
 ---
 
 ## **3.1 `enhanced.html`**
 
-A complete, runnable HTML page that:
+A complete HTML document that:
 
-* Implements all new features
-* Preserves drag-and-drop + collapse/expand
-* Contains inline `<style>` and `<script>`
+* Implements all features (2.1–2.7)
+* Preserves drag-and-drop and collapse/expand behavior
+* Uses inline `<style>` and `<script>`
 * Uses only jQuery + jQuery UI
 * Runs directly in a browser
-* Does **not** overwrite or modify `input.html`
+* Does **not** modify `input.html`
 
 ---
 
@@ -109,43 +103,38 @@ A complete, runnable HTML page that:
 
 Must explain:
 
-### **Overview**
+* Overview of new features
 
-* What the enhanced version adds
-* Summary of major improvements
+* How to use:
 
-### **Usage**
+  * add/delete notes
+  * labels/color coding
+  * search/filter
+  * import/export
+  * scrollable notes
+  * drag-and-drop
+  * undo delete
 
-* How to add / delete notes
-* How JSON import/export works
-* How scrollable content behaves
-* How to drag & rearrange portlets
+* Technical notes, styling changes, dependencies
 
-### **Technical Notes**
+* Clarify that:
 
-* Main code changes
-* Styling changes
-* Dependencies
-
-### **File Information**
-
-* `input.html` remains unchanged
-* `enhanced.html` is the new app
+  * `input.html` is unchanged
+  * `enhanced.html` is the new enhanced app
 
 ---
 
 # **4. Constraints**
 
-* Produce exactly two files: `enhanced.html` and `README.md`
-* No external frameworks or build tools
-* Must be runnable in a modern browser
+* Output exactly **two** files: `enhanced.html` and `README.md`
+* No external frameworks or build steps
+* Must run in any modern browser
 * Must not modify `input.html`
 
 ---
 
 # **5. Final Deliverables**
 
-Your response must include:
+1. **`enhanced.html`**
+2. **`README.md`**
 
-1. **`enhanced.html`** — the enhanced app
-2. **`README.md`** — clear documentation
