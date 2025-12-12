@@ -1,52 +1,47 @@
 {
   "columns": [
     {
-      "id": "column-1",
-      "portlets": [
+      "id": "col-1",
+      "notes": [
         {
-          "header": "Important — Server Migration Plan",
-          "content": "Tasks:\n- Backup all DBs\n- Migrate staging\n- Perform smoke tests\n- Switch production traffic\n- Monitor logs for 24 hours\n\nThis is intentionally long to test scrollability.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum tempor turpis at neque gravida, a dapibus risus fermentum. Praesent gravida aliquam orci, non feugiat nisi hendrerit id.\n\n(End of long content)",
-          "label": "Important"
+          "header": "📌 Today's Tasks",
+          "content": "- Reply to customer emails (urgent)\n- Finalize the prototype for the new dashboard\n- Design review at 3 PM\n- Update weekly team status\n\nReminder: Align the goals for this sprint before Thursday.",
+          "label": "important"
         },
         {
-          "header": "Quick Idea 💡",
-          "content": "Think about a plug-in system for custom note templates.",
-          "label": "Idea"
+          "header": "💡 Random Idea",
+          "content": "Maybe we should explore adding a Quick Actions panel on the homepage to reduce multi-step navigation. Conduct user interviews to validate the need.",
+          "label": "idea"
         }
       ]
     },
     {
-      "id": "column-2",
-      "portlets": [
+      "id": "col-2",
+      "notes": [
         {
-          "header": "Shopping List 🛒",
-          "content": "Eggs\nMilk\nBread\nAvocados\nCoffee beans\n\n(Short list)",
-          "label": "Default"
-        },
-        {
-          "header": "Scrollable Test Note",
-          "content": "This note exists solely to test scroll bars. Below is intentionally repetitive content.\n\nLine 1: Scroll test\nLine 2: Scroll test\nLine 3: Scroll test\nLine 4: Scroll test\nLine 5: Scroll test\nLine 6: Scroll test\nLine 7: Scroll test\nLine 8: Scroll test\nLine 9: Scroll test\nLine 10: Scroll test\nLine 11: Scroll test\nLine 12: Scroll test\nLine 13: Scroll test\nLine 14: Scroll test\nLine 15: Scroll test\nLine 16: Scroll test\nLine 17: Scroll test\nLine 18: Scroll test\nLine 19: Scroll test\nLine 20: Scroll test\n\nEnd.",
-          "label": "Default"
+          "header": "📝 Meeting Notes — Feb 17, 2025",
+          "content": "Attendees: Product, Design, Engineering\nTopic: Clarifying requirements for the new Task Center\n\nKey Agreements:\n1. MVP will not include cross-project linking.\n2. Must support list and board views for launch.\n3. Notification redesign postponed to Q2.\n\nAction Items:\n- Product: Update requirements doc.\n- Design: Provide two interaction concepts by next week.\n- Engineering: Estimate development effort by Wednesday.",
+          "label": "default"
         }
       ]
     },
     {
-      "id": "column-3",
-      "portlets": [
+      "id": "col-3",
+      "notes": [
         {
-          "header": "Empty Content Example",
-          "content": "",
-          "label": "Default"
+          "header": "🛒 Grocery List",
+          "content": "• Milk (2 cartons)\n• Eggs (dozen)\n• Whole grain bread\n• Orange juice\n• Cat food (large bag)\n• Vitamin C — keep forgetting to buy this",
+          "label": "personal"
         },
         {
-          "header": "Emoji Test 😀🔥🚀",
-          "content": "Emoji test to verify Unicode support.\n🔥🔥🔥",
-          "label": "Fun"
+          "header": "🔗 Useful Links",
+          "content": "1. Color palette generator: https://coolors.co\n2. Free stock photos: https://unsplash.com\n3. Tech blog: https://overreacted.io",
+          "label": "reference"
         },
         {
-          "header": "Filter Test Note",
-          "content": "You should be able to find this using the search bar.",
-          "label": "Default"
+          "header": "📚 Reading Notes: Deep Work",
+          "content": "Key Takeaways:\n- Deep work produces disproportionate value.\n- Reduce fragmented time and build deliberate workflows.\n\nQuote:\n\"The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.\"",
+          "label": "study"
         }
       ]
     }

@@ -1,13 +1,9 @@
 You are given an existing single-page app stored in **`input.html`**, which implements a drag-and-drop note organizer using jQuery UI portlets.
-Your task is to generate **two new files**:
 
-1. **`enhanced.html`** — a standalone enhanced version of the app
-2. **`README.md`** — documentation describing the enhancements and how to use the updated app
+Your task is to produce an **enhanced implementation** of this application along with accompanying documentation.
+**Your deliverables do NOT need to be HTML files specifically** — any format is acceptable **as long as the solution fulfills the functional requirements** and demonstrates the enhanced behavior clearly.
 
-**Do NOT modify `input.html`.**
-Your solution must produce a new HTML file that preserves all existing behaviors while adding the improvements below.
-
-In addition, you will be given a **JSON layout file**, and your output must demonstrate that the enhanced app can correctly import this JSON by presenting the **post-import layout**.
+You will also be given a **JSON layout file (`example-layout.json`)**, and your output must demonstrate that the enhanced solution can correctly import this JSON and produce the **post-import layout** in whatever form your enhanced solution renders.
 
 ---
 
@@ -15,132 +11,140 @@ In addition, you will be given a **JSON layout file**, and your output must demo
 
 `input.html` currently:
 
-* Displays multiple `.column` containers.
-* Contains draggable portlets (`jQuery UI sortable`).
-* Each portlet has a header and content area.
-* The header icon collapses/expands the content.
+* Displays multiple `.column` containers
+* Contains draggable notes (“portlets”) using jQuery UI sortable
+* Each portlet has a header and a content area
+* The header icon collapses/expands the content
 
-All of this must remain functional in the enhanced version.
+All existing behaviors must remain supported in the enhanced version.
 
 ---
 
 # **2. Required Feature Improvements**
 
-Your new file **`enhanced.html`** must implement:
+Your enhanced solution must support all of the following features:
 
 ---
 
 ## **2.1 Add & Delete Notes**
 
-* UI to add new portlets to a chosen column.
-* New portlets must be draggable, editable, and include a delete (“✕”) button.
+* Provide a mechanism to add new notes to a chosen column
+* New notes must be draggable, editable, and deletable (via “✕” button)
 
 ---
 
 ## **2.2 Scrollable Long Notes**
 
-* `.portlet-content` must support longer text via fixed/max height + `overflow: auto`.
+* Note content areas must support long text
+* Use fixed/max height + `overflow: auto`
 
 ---
 
 ## **2.3 Import & Export as JSON**
 
-Provide UI to:
+Your enhanced solution must:
 
-* **Export** the full layout (columns → ordered portlets → header, content, label).
-* **Import** a saved JSON file and rebuild the layout with all behaviors preserved.
+* **Export** the entire layout structure (columns → ordered notes → header, content, label)
+* **Import** a JSON layout and reconstruct the UI identically
 
 **New Requirement:**
-You will be given a JSON file eaxmple-layout.json.
-Your final response must show **the correct imported layout** based on that JSON, proving that the implementation can parse and render it.
+You will receive a JSON file `example-layout.json`.
+Your final answer must demonstrate the **correct imported result**, i.e., your enhanced solution must initialize itself using the provided JSON so reviewers can verify correctness.
 
 ---
 
 ## **2.4 Visual Appearance Upgrade**
 
-Improve the UI with:
+You must significantly improve the UI aesthetics:
 
-* better spacing and alignment
-* improved colors/backgrounds
-* nicer borders, rounding, shadows
-* clearer typography
-* improved hover/drag cues
+* cleaner spacing/alignment
+* modernized backgrounds/colors
+* rounded corners, shadows, cleaner borders
+* improved typography
+* clearer hover/drag cues
 * consistent column spacing
 
 ---
 
 ## **2.5 Note Labels / Color Coding**
 
-* Allow assigning a label/color per note.
-* Labels must change note appearance and be included in import/export JSON.
+* Users can assign labels/colors to notes
+* Appearance changes accordingly
+* Labels must be preserved during import/export
 
 ---
 
 ## **2.6 Search / Filter Notes**
 
-* Add a search bar that filters notes in real time by header/content.
+* Search bar filters notes in real time by header or content text
 
 ---
 
 ## **2.7 Undo Last Delete**
 
-* Support undoing the most recently deleted note.
+* Support undoing the most recently deleted note
+* Only one-level undo is required
 
 ---
 
 # **3. Output Requirements**
 
-Your final answer must include both the enhanced HTML and a README.
+Your final answer must include **two deliverables** — format is flexible.
 
 ---
 
-## **3.1 `enhanced.html`**
+## **3.1 Enhanced Implementation (“enhanced_app.*”)**
 
-A complete, runnable HTML page that:
+Your enhanced solution may be delivered in **any appropriate format**, such as:
 
-* Implements all features (2.1–2.7)
-* Fully preserves existing sortable + toggle behaviors
-* Uses inline `<style>` + `<script>`
-* Uses only jQuery + jQuery UI
-* Runs directly in a browser
+* `enhanced.html`
+* `enhanced_app.js` + instructions
+* A bundled file structure
+* A markdown-based pseudo-UI
+* Any runnable or displayable format
+
+As long as it:
+
+* Implements all feature requirements (2.1–2.7)
+* Preserves drag-and-drop and collapse/expand behaviors
 * Does **not** modify `input.html`
-* **Successfully loads the provided JSON and presents the imported layout as the initial visible state**
+* **Begins in the state produced by importing the provided JSON layout**
 
 ---
 
-## **3.2 `README.md`**
+## **3.2 Documentation (`README.md`)**
 
-Must explain:
+Must clearly explain:
 
-* Overview of added features
-* How to use:
+* Overview of enhancements
+* How to use all interactive features:
 
-  * add/delete
-  * labels/colors
+  * add/delete notes
+  * label/color assignment
   * search/filter
   * import/export
   * undo delete
   * scrollable content
   * drag-and-drop
-* Technical notes and styling changes
-* File explanation:
-
-  * `input.html` unchanged
-  * `enhanced.html` is the new enhanced app
+* Technical notes and design decisions
+* Explanation of file structure
+* Clarification that `input.html` remains unchanged
 
 ---
 
 # **4. Constraints**
 
-* Output exactly **two** files: `enhanced.html` and `README.md`
-* No external frameworks or build steps
-* Must run in any modern browser
-* Must not modify `input.html`
-* The output HTML must **start in a state that reflects the imported JSON layout**
+* Output **exactly two files**
+
+  * Enhanced implementation (any format)
+  * README.md
+* No external frameworks or build tools
+* Must run/display in a modern browser or environment as described
+* Must start in a state reflecting the imported JSON layout
 
 ---
 
 # **5. Final Deliverables**
 
-1. **`enhanced.html`** — with imported JSON applied
+1. **Enhanced implementation** (`enhanced_app.*`)
 2. **`README.md`**
