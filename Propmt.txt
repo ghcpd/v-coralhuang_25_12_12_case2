@@ -1,105 +1,119 @@
-You are given an existing single-page app that runs in the browser and uses drag-and-drop “portlet” text boxes arranged in columns. It currently works for short notes and basic organization, using jQuery UI’s sortable behavior.
+You are given an existing single-page app in a file called **`input.html`**.
+This file contains a browser-based drag-and-drop note organizer built using jQuery UI portlets.
+The current app works for short notes and basic organization.
 
-Your goal is to implement **feature improvements** on top of the existing behavior, **and improve the overall visual appearance of the interface**, without breaking the current drag-and-drop and collapse/expand functionality.
-
-You will receive the current implementation in a separate HTML file.
+Your task is to **produce a new enhanced HTML file** that implements additional features and improves the visual design.
+**You must not modify `input.html` directly.**
+Instead, you must output a **new, complete HTML file** that incorporates all required improvements while preserving the app’s existing behavior.
 
 ---
 
-### Current behavior (for context)
+# **1. Current behavior (for context)**
 
-* The page renders several columns (`.column`), each containing draggable “portlet” boxes.
+The app in `input.html` currently:
+
+* Renders multiple columns (`.column`), each containing draggable “portlet” boxes.
 * Each portlet has:
 
-  * a header (`.portlet-header`) used as the drag handle;
-  * a content area (`.portlet-content`) that displays a short text note.
-* The user can drag portlets between columns.
-* Clicking the icon in the header collapses/expands the content area.
+  * a header (`.portlet-header`) used as a drag handle,
+  * a content block (`.portlet-content`) displaying a brief note.
+* Users can drag portlets between columns.
+* Clicking the toggle icon in the header collapses/expands the content.
+
+This behavior must continue to work after the enhancement.
 
 ---
 
-## **Required feature improvements**
+# **2. Required feature improvements**
 
-Update the existing HTML/JavaScript so that the app supports the following features and **looks cleaner, more polished, and visually consistent**:
+Your enhanced output HTML must implement the following new capabilities **and improve overall appearance**.
 
 ---
 
-### **1. Add and delete notes**
+## **2.1 Add and delete notes**
 
-* Provide UI controls to **add a new portlet** to a selected column.
+Add UI controls that allow the user to:
+
+* **Create new portlets** inside a selected column.
 * New portlets must:
 
-  * be draggable like existing ones,
-  * have editable header and content,
+  * be draggable,
+  * have editable header + editable content,
   * include a **delete (“✕”) button** in the header.
-* Added portlets must visually match the improved styling requirements.
+* Added portlets must follow the improved, modernized styling.
 
 ---
 
-### **2. Scrollable long note content**
+## **2.2 Scrollable long notes**
 
-* The content region must support long text input:
+The content area must support longer text:
 
-  * Use a fixed/max height for content areas.
-  * Make long content scrollable (`overflow: auto`).
-* Ensure scrollbars and spacing are visually clean and do not break column layout.
-
----
-
-### **3. JSON export and import of layouts**
-
-Provide UI for:
-
-* **Exporting** the layout as a JSON file (including columns, order, headers, and content).
-
-  * Let the user choose a filename.
-  * The JSON should accurately represent all portlets.
-
-* **Importing** a previously saved JSON file.
-
-  * Clear the current layout and rebuild all portlets from JSON input.
-  * Imported portlets must retain the improved visual styles and interactions.
-
-This feature allows users to switch between different saved “groups” of notes.
+* Limit content height using CSS.
+* Use `overflow: auto` to allow scrolling inside the note.
+* Ensure the grid layout remains stable even with long content.
 
 ---
 
-### **4. Improve visual appearance (required aesthetic enhancement)**
+## **2.3 JSON export and import**
 
-In addition to functional updates, **the UI must be made more visually appealing**, including but not limited to:
+Add UI elements to support:
 
-* Enhanced spacing, padding, and alignment.
-* Modernized color palette or subtle backgrounds.
-* More polished borders, shadows, or rounded corners.
-* More readable typography (font size, line-height, etc.).
-* Improved column spacing and portlet layout consistency.
-* Better visual feedback on hover, drag handle, or selected states.
+### **Export**
 
-You **may extend or override styles**, but do not remove essential jQuery UI classes unless replaced cleanly.
+* Export the entire layout to JSON (columns + ordered portlets + header + content).
+* Allow the user to choose the filename.
+* Download the JSON as a file.
 
-The interface should feel cleaner, more modern, and more visually coherent.
+### **Import**
 
----
+* Load a JSON file created by the export function.
+* Replace the current layout with the imported one.
+* Restored portlets must preserve all styling, interactions, and user-editability.
 
-### **5. Preserve existing behavior**
-
-* jQuery UI sortable must continue working.
-* Collapsing/expanding via the header icon must remain functional.
-* The underlying structure may be refactored, but base interactions must remain intact.
+This feature enables users to maintain multiple “groups” of notes.
 
 ---
 
-## **Constraints and expectations**
+## **2.4 Visual appearance enhancement (required)**
 
-* All code must remain inside a **single HTML file** (`<style>` + `<script>` allowed).
-* Use only jQuery + jQuery UI (already included); do not add frameworks.
-* JavaScript may be refactored into helper functions for maintainability.
-* The resulting file must run directly in a modern browser with no build steps.
+The enhanced UI must be noticeably more visually appealing, including:
 
-Your output should be the **updated HTML file** containing:
+* More modern spacing, padding, and alignment.
+* Subtle visual backgrounds or color palette improvements.
+* Cleaner borders, consistent rounding, light shadows.
+* Improved typography (font size, readability, spacing).
+* Better visual cues for dragging or hovering.
+* Consistent sizing and spacing across columns and portlets.
+
+You **may override or extend existing CSS**, but must not break sortable/collapse behavior.
+
+---
+
+## **2.5 Preserve all existing functionality**
+
+Even after enhancements, the following must continue working:
+
+* jQuery UI sortable (drag-and-drop between columns).
+* Collapse/expand via the toggle icon.
+* Basic layout and behavior in `input.html`.
+
+---
+
+# **3. Constraints and expectations**
+
+* All code must remain in a **single new HTML file** that you output.
+* Your output **must not modify `input.html` in place**—produce a new standalone enhanced HTML.
+* Use only jQuery + jQuery UI (already included in the original).
+* Refactor JavaScript where appropriate, but stay inside the same HTML file.
+* The output file must run directly in a browser without any build tools.
+
+---
+
+# **4. Final expected output**
+
+Your final answer must be a **fully functional enhanced HTML file** that includes:
 
 * All required new features
 * All aesthetic improvements
 * Fully working drag/drop and collapse/expand
-* Clean, visually enhanced UI
-
+* Clean, modern UI design
