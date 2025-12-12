@@ -1,11 +1,13 @@
 You are given an existing single-page app stored in **`input.html`**, which implements a drag-and-drop note organizer using jQuery UI portlets.
-Your job is to generate **two new files**:
+Your task is to generate **two new files**:
 
 1. **`enhanced.html`** — a standalone enhanced version of the app
 2. **`README.md`** — documentation describing the enhancements and how to use the updated app
 
 **Do NOT modify `input.html`.**
-Your solution must be a new HTML file that keeps all existing behaviors while adding the improvements below.
+Your solution must produce a new HTML file that preserves all existing behaviors while adding the improvements below.
+
+In addition, you will be given a **JSON layout file**, and your output must demonstrate that the enhanced app can correctly import this JSON by presenting the **post-import layout**.
 
 ---
 
@@ -13,12 +15,12 @@ Your solution must be a new HTML file that keeps all existing behaviors while ad
 
 `input.html` currently:
 
-* Shows multiple `.column` containers.
+* Displays multiple `.column` containers.
 * Contains draggable portlets (`jQuery UI sortable`).
-* Each portlet has a header (drag handle) and content area.
-* The header icon toggles content visibility.
+* Each portlet has a header and content area.
+* The header icon collapses/expands the content.
 
-These behaviors must remain functional.
+All of this must remain functional in the enhanced version.
 
 ---
 
@@ -31,13 +33,13 @@ Your new file **`enhanced.html`** must implement:
 ## **2.1 Add & Delete Notes**
 
 * UI to add new portlets to a chosen column.
-* New portlets must be draggable, editable (header + content), and include a delete (“✕”) button.
+* New portlets must be draggable, editable, and include a delete (“✕”) button.
 
 ---
 
 ## **2.2 Scrollable Long Notes**
 
-* Make `.portlet-content` support long text via a fixed/max height and `overflow: auto`.
+* `.portlet-content` must support longer text via fixed/max height + `overflow: auto`.
 
 ---
 
@@ -45,57 +47,64 @@ Your new file **`enhanced.html`** must implement:
 
 Provide UI to:
 
-* **Export** the entire layout (columns + ordered portlets + header + content + label).
-* **Import** a saved JSON file and rebuild the layout, preserving all interactions.
+* **Export** the full layout (columns → ordered portlets → header, content, label).
+* **Import** a saved JSON file and rebuild the layout with all behaviors preserved.
+
+**New Requirement:**
+You will be given a JSON file eaxmple-layout.json.
+Your final response must show **the correct imported layout** based on that JSON, proving that the implementation can parse and render it.
 
 ---
 
 ## **2.4 Visual Appearance Upgrade**
 
-Improve the UI so it looks modern and polished, including:
+Improve the UI with:
 
 * better spacing and alignment
-* updated colors/backgrounds
-* improved borders, shadows, rounding
+* improved colors/backgrounds
+* nicer borders, rounding, shadows
 * clearer typography
-* hover / drag feedback
+* improved hover/drag cues
 * consistent column spacing
 
 ---
 
 ## **2.5 Note Labels / Color Coding**
 
-* Allow assigning a label/color to each note (e.g., “Default”, “Important”, “Idea”).
-* Labels must visually change the note and be included in import/export JSON.
+* Allow assigning a label/color per note.
+* Labels must change note appearance and be included in import/export JSON.
 
 ---
 
 ## **2.6 Search / Filter Notes**
 
-* Add a search bar that filters notes in real time by header or content text.
+* Add a search bar that filters notes in real time by header/content.
 
 ---
 
 ## **2.7 Undo Last Delete**
 
-* Support undoing the most recently deleted note (restore data and interactions).
+* Support undoing the most recently deleted note.
 
 ---
 
 # **3. Output Requirements**
 
+Your final answer must include both the enhanced HTML and a README.
+
 ---
 
 ## **3.1 `enhanced.html`**
 
-A complete HTML document that:
+A complete, runnable HTML page that:
 
 * Implements all features (2.1–2.7)
-* Preserves drag-and-drop and collapse/expand behavior
-* Uses inline `<style>` and `<script>`
+* Fully preserves existing sortable + toggle behaviors
+* Uses inline `<style>` + `<script>`
 * Uses only jQuery + jQuery UI
 * Runs directly in a browser
 * Does **not** modify `input.html`
+* **Successfully loads the provided JSON and presents the imported layout as the initial visible state**
 
 ---
 
@@ -103,23 +112,20 @@ A complete HTML document that:
 
 Must explain:
 
-* Overview of new features
-
+* Overview of added features
 * How to use:
 
-  * add/delete notes
-  * labels/color coding
+  * add/delete
+  * labels/colors
   * search/filter
   * import/export
-  * scrollable notes
-  * drag-and-drop
   * undo delete
+  * scrollable content
+  * drag-and-drop
+* Technical notes and styling changes
+* File explanation:
 
-* Technical notes, styling changes, dependencies
-
-* Clarify that:
-
-  * `input.html` is unchanged
+  * `input.html` unchanged
   * `enhanced.html` is the new enhanced app
 
 ---
@@ -130,11 +136,11 @@ Must explain:
 * No external frameworks or build steps
 * Must run in any modern browser
 * Must not modify `input.html`
+* The output HTML must **start in a state that reflects the imported JSON layout**
 
 ---
 
 # **5. Final Deliverables**
 
-1. **`enhanced.html`**
+1. **`enhanced.html`** — with imported JSON applied
 2. **`README.md`**
-

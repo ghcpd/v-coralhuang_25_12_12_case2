@@ -1,0 +1,54 @@
+{
+  "columns": [
+    {
+      "id": "column-1",
+      "portlets": [
+        {
+          "header": "Important — Server Migration Plan",
+          "content": "Tasks:\n- Backup all DBs\n- Migrate staging\n- Perform smoke tests\n- Switch production traffic\n- Monitor logs for 24 hours\n\nThis is intentionally long to test scrollability.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum tempor turpis at neque gravida, a dapibus risus fermentum. Praesent gravida aliquam orci, non feugiat nisi hendrerit id.\n\n(End of long content)",
+          "label": "Important"
+        },
+        {
+          "header": "Quick Idea 💡",
+          "content": "Think about a plug-in system for custom note templates.",
+          "label": "Idea"
+        }
+      ]
+    },
+    {
+      "id": "column-2",
+      "portlets": [
+        {
+          "header": "Shopping List 🛒",
+          "content": "Eggs\nMilk\nBread\nAvocados\nCoffee beans\n\n(Short list)",
+          "label": "Default"
+        },
+        {
+          "header": "Scrollable Test Note",
+          "content": "This note exists solely to test scroll bars. Below is intentionally repetitive content.\n\nLine 1: Scroll test\nLine 2: Scroll test\nLine 3: Scroll test\nLine 4: Scroll test\nLine 5: Scroll test\nLine 6: Scroll test\nLine 7: Scroll test\nLine 8: Scroll test\nLine 9: Scroll test\nLine 10: Scroll test\nLine 11: Scroll test\nLine 12: Scroll test\nLine 13: Scroll test\nLine 14: Scroll test\nLine 15: Scroll test\nLine 16: Scroll test\nLine 17: Scroll test\nLine 18: Scroll test\nLine 19: Scroll test\nLine 20: Scroll test\n\nEnd.",
+          "label": "Default"
+        }
+      ]
+    },
+    {
+      "id": "column-3",
+      "portlets": [
+        {
+          "header": "Empty Content Example",
+          "content": "",
+          "label": "Default"
+        },
+        {
+          "header": "Emoji Test 😀🔥🚀",
+          "content": "Emoji test to verify Unicode support.\n🔥🔥🔥",
+          "label": "Fun"
+        },
+        {
+          "header": "Filter Test Note",
+          "content": "You should be able to find this using the search bar.",
+          "label": "Default"
+        }
+      ]
+    }
+  ]
+}
