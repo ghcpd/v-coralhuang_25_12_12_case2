@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enhanced Notes Organizer</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --panel:#0b1220;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
+      --accent: #6ee7b7;
+      --card: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      --shadow: 0 6px 18px rgba(2,6,23,0.6);
+      --radius:12px;
+      --note-max-height:180px;
+      --gap:18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color-scheme: dark;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background: radial-gradient(1200px 400px at 10% 10%, rgba(110,231,183,0.06), transparent), linear-gradient(180deg,#071024 0%, #041022 100%);
+      color: #e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+      box-sizing:border-box;
+    }
+    .app{
+      max-width:1200px;
+      margin:0 auto;
+    }
+    header.topbar{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      margin-bottom:22px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-right:12px;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#1f2937,#0ea5a9);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;
+    }
+    h1{font-size:18px;margin:0}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+
+    .controls{
+      margin-left:auto;display:flex;gap:10px;align-items:center;
+    }
+    .search{
+      background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:10px 12px;border-radius:10px;display:flex;align-items:center;gap:8px;min-width:240px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .search input{background:transparent;border:0;outline:0;color:inherit;width:220px;font-size:13px}
+
+    .btn{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:inherit;font-size:13px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;box-shadow:var(--shadow);
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);box-shadow:none}
+    .btn:active{transform:translateY(1px)}
+
+    /* Board */
+    .board{
+      display:flex;gap:var(--gap);align-items:flex-start;overflow:auto;padding-bottom:40px;
+    }
+    .column{
+      width:340px;background:var(--panel);padding:14px;border-radius:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.02);flex:0 0 340px;display:flex;flex-direction:column;gap:12px;
+    }
+    .column-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .column-title{font-weight:700;letter-spacing:0.2px}
+    .col-actions{display:flex;gap:8px;align-items:center}
+
+    .notes{
+      display:flex;flex-direction:column;gap:12px;
+      min-height:40px;transition:background .15s;border-radius:10px;padding:6px;
+    }
+
+    .note{
+      background:var(--card);border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(2,6,23,0.55);display:flex;flex-direction:column;gap:8px;cursor:grab;user-select:none;
+      transition:transform .15s, box-shadow .12s, opacity .12s;position:relative;
+    }
+    .note.dragging{opacity:0.6;transform:scale(.995);box-shadow:0 20px 40px rgba(2,6,23,0.7)}
+    .note.hidden{display:none !important;}
+    .note-header{display:flex;align-items:center;gap:8px}
+    .drag-handle{font-size:16px;color:var(--muted);cursor:grab;padding:6px;border-radius:8px}
+    .drag-handle:hover{background:rgba(255,255,255,0.02)}
+    .note-title{font-weight:700;flex:1;outline:0;min-width:0}
+    .note-title:empty:before{content:"(untitled)";color:var(--muted);font-weight:600}
+    .note-title[contenteditable]{cursor:text}
+
+    .label-badge{
+      display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,0.03);
+    }
+    .label-dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06)}
+
+    .note-controls{display:flex;gap:8px;align-items:center}
+    .label-select{appearance:none;border:0;background:transparent;color:inherit;font-weight:700;padding:6px;border-radius:8px;cursor:pointer}
+    .collapse-btn{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px}
+    .delete-btn{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:0;padding:6px 8px;border-radius:10px;color:#ffd7d7;cursor:pointer}
+
+    .note-content{background:rgba(0,0,0,0.02);padding:8px;border-radius:8px;white-space:pre-wrap;max-height:var(--note-max-height);overflow:auto;font-size:13px;color: #d8e6f2;border:1px solid rgba(255,255,255,0.01)}
+    .note.collapsed .note-content{display:none}
+
+    .placeholder{height:68px;border-radius:12px;border:2px dashed rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);box-shadow:inset 0 2px 10px rgba(0,0,0,0.4)}
+
+    footer.info{opacity:.9;margin-top:18px;color:var(--muted);font-size:13px}
+
+    /* small screens */
+    @media (max-width:1100px){.board{gap:12px;}.column{flex:1 0 300px}}
+    @media (max-width:720px){body{padding:16px}.board{flex-direction:column;}.controls{flex-wrap:wrap}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">NB</div>
+        <div>
+          <h1>Enhanced Notes Organizer</h1>
+          <div class="subtitle">Improved UI — import from example-layout.json on load</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="search" title="Search notes by header or content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.85"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /><circle cx="11" cy="11" r="5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <input id="search" placeholder="Search notes..." />
+        </div>
+
+        <button id="importBtn" class="btn ghost" title="Import JSON layout">Import</button>
+        <input id="fileInput" type="file" accept="application/json" style="display:none" />
+        <button id="exportBtn" class="btn" title="Export current layout as JSON">Export</button>
+        <button id="undoBtn" class="btn ghost" title="Undo last delete" disabled>Undo Delete</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="board" class="board" aria-label="Notes board">
+        <!-- columns inserted here -->
+      </section>
+    </main>
+
+    <footer class="info">Tip: Double-click any header or content to edit. Use the label selector to color-code notes.</footer>
+  </div>
+
+  <script>
+  (function(){
+    // Labels configuration
+    const LABELS = {
+      default: {name:'Default', color:'#94a3b8'},
+      important: {name:'Important', color:'#ff6b6b'},
+      idea: {name:'Idea', color:'#8b5cf6'},
+      personal: {name:'Personal', color:'#06b6d4'},
+      reference: {name:'Reference', color:'#3b82f6'},
+      study: {name:'Study', color:'#f59e0b'}
+    };
+
+    // Embedded copy of example-layout.json to guarantee the app initializes to the provided layout
+    const EMBEDDED_EXAMPLE = {
+      "columns": [
+        {
+          "id": "col-1",
+          "notes": [
+            {
+              "header": "📌 Today's Tasks",
+              "content": "- Reply to customer emails (urgent)\n- Finalize the prototype for the new dashboard\n- Design review at 3 PM\n- Update weekly team status\n\nReminder: Align the goals for this sprint before Thursday.",
+              "label": "important"
+            },
+            {
+              "header": "💡 Random Idea",
+              "content": "Maybe we should explore adding a Quick Actions panel on the homepage to reduce multi-step navigation. Conduct user interviews to validate the need.",
+              "label": "idea"
+            }
+          ]
+        },
+        {
+          "id": "col-2",
+          "notes": [
+            {
+              "header": "📝 Meeting Notes — Feb 17, 2025",
+              "content": "Attendees: Product, Design, Engineering\nTopic: Clarifying requirements for the new Task Center\n\nKey Agreements:\n1. MVP will not include cross-project linking.\n2. Must support list and board views for launch.\n3. Notification redesign postponed to Q2.\n\nAction Items:\n- Product: Update requirements doc.\n- Design: Provide two interaction concepts by next week.\n- Engineering: Estimate development effort by Wednesday.",
+              "label": "default"
+            }
+          ]
+        },
+        {
+          "id": "col-3",
+          "notes": [
+            {
+              "header": "🛒 Grocery List",
+              "content": "• Milk (2 cartons)\n• Eggs (dozen)\n• Whole grain bread\n• Orange juice\n• Cat food (large bag)\n• Vitamin C — keep forgetting to buy this",
+              "label": "personal"
+            },
+            {
+              "header": "🔗 Useful Links",
+              "content": "1. Color palette generator: https://coolors.co\n2. Free stock photos: https://unsplash.com\n3. Tech blog: https://overreacted.io",
+              "label": "reference"
+            },
+            {
+              "header": "📚 Reading Notes: Deep Work",
+              "content": "Key Takeaways:\n- Deep work produces disproportionate value.\n- Reduce fragmented time and build deliberate workflows.\n\nQuote:\n\"The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.\"",
+              "label": "study"
+            }
+          ]
+        }
+      ]
+    };
+
+    const board = document.getElementById('board');
+    const searchInput = document.getElementById('search');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const fileInput = document.getElementById('fileInput');
+    const undoBtn = document.getElementById('undoBtn');
+
+    let dragged = null;
+    let lastDeleted = null; // {data, columnId, index}
+
+    // Helpers
+    function createElem(tag, cls, attrs={}){
+      const el = document.createElement(tag);
+      if(cls) el.className = cls;
+      for(const k in attrs){ if(k==='html') el.innerHTML = attrs[k]; else el.setAttribute(k, attrs[k]); }
+      return el;
+    }
+
+    function makeColumn(id, title){
+      const col = createElem('div','column');
+      col.dataset.id = id || ('col-' + Math.random().toString(36).slice(2,9));
+
+      const header = createElem('div','column-header');
+      const t = createElem('div','column-title'); t.textContent = title || id || 'Column';
+      header.appendChild(t);
+
+      const actions = createElem('div','col-actions');
+      const addBtn = createElem('button','btn ghost'); addBtn.textContent = '+ Add Note';
+      addBtn.title = 'Add a new note to this column';
+      addBtn.addEventListener('click', ()=>{
+        const notes = col.querySelector('.notes');
+        const newNote = createNote({header:'New note',content:'Edit me',label:'default'});
+        notes.appendChild(newNote);
+        newNote.querySelector('.note-title').focus();
+        attachNoteListeners(newNote);
+      });
+      actions.appendChild(addBtn);
+      header.appendChild(actions);
+
+      col.appendChild(header);
+
+      const notes = createElem('div','notes');
+      // drag events on notes container
+      notes.addEventListener('dragover', e=>{
+        e.preventDefault();
+        const after = getDragAfterElement(notes, e.clientY);
+        const draggingEl = document.querySelector('.note.dragging');
+        if(!draggingEl) return;
+        if(after == null) notes.appendChild(draggingEl);
+        else notes.insertBefore(draggingEl, after);
+      });
+
+      notes.addEventListener('drop', e=>{
+        e.preventDefault();
+      });
+
+      col.appendChild(notes);
+      return col;
+    }
+
+    function createNote(noteData){
+      const note = createElem('div','note');
+      note.setAttribute('draggable','true');
+      note.dataset.label = noteData.label || 'default';
+
+      const header = createElem('div','note-header');
+      const drag = createElem('div','drag-handle'); drag.innerHTML = '≡';
+      header.appendChild(drag);
+
+      const title = createElem('div','note-title'); title.contentEditable = true; title.innerText = noteData.header || '';
+      header.appendChild(title);
+
+      // label badge + select
+      const badge = createElem('div','label-badge');
+      const dot = createElem('span','label-dot');
+      dot.style.background = LABELS[note.dataset.label].color || LABELS.default.color;
+      badge.appendChild(dot);
+      const labelSelect = createElem('select','label-select');
+      for(const key in LABELS){
+        const opt = document.createElement('option'); opt.value = key; opt.textContent = LABELS[key].name; if(key===note.dataset.label) opt.selected=true; labelSelect.appendChild(opt);
+      }
+      labelSelect.addEventListener('change', e=>{
+        note.dataset.label = e.target.value;
+        dot.style.background = LABELS[e.target.value].color;
+      });
+      badge.appendChild(labelSelect);
+      header.appendChild(badge);
+
+      const controls = createElem('div','note-controls');
+      const collapse = createElem('button','collapse-btn'); collapse.innerHTML = '▾';
+      collapse.title = 'Collapse / expand note content';
+      collapse.addEventListener('click', ()=>{ note.classList.toggle('collapsed'); });
+      controls.appendChild(collapse);
+
+      const del = createElem('button','delete-btn'); del.innerHTML = '✕'; del.title='Delete note';
+      del.addEventListener('click', ()=>{
+        const col = note.closest('.column');
+        const notes = Array.from(col.querySelectorAll('.notes .note'));
+        const index = notes.indexOf(note);
+        lastDeleted = {data:serializeNote(note), columnId: col.dataset.id, index};
+        note.remove();
+        undoBtn.disabled = false; undoBtn.classList.remove('ghost');
+      });
+      controls.appendChild(del);
+
+      header.appendChild(controls);
+      note.appendChild(header);
+
+      const content = createElem('div','note-content'); content.contentEditable = true; content.innerText = noteData.content || '';
+      note.appendChild(content);
+
+      // set badge dot color again (in case label missing)
+      dot.style.background = (LABELS[note.dataset.label]||LABELS.default).color;
+
+      // Event listeners: drag
+      note.addEventListener('dragstart', (e)=>{
+        dragged = note; note.classList.add('dragging');
+        try{ e.dataTransfer.setData('text/plain', ''); }catch(err){}
+      });
+      note.addEventListener('dragend', ()=>{ dragged=null; note.classList.remove('dragging'); });
+
+      // Prevent some elements from starting selection during drag
+      note.addEventListener('mousedown', (e)=>{
+        if(e.target.closest('button') || e.target.tagName==='SELECT') return;
+      });
+
+      // make editable fields blur->save on enter (prevent newline on header)
+      title.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); title.blur(); }});
+
+      return note;
+    }
+
+    function attachNoteListeners(note){
+      // In case of dynamic notes, ensure label select updates existing badge dot
+      const select = note.querySelector('.label-select');
+      const dot = note.querySelector('.label-dot');
+      if(select && dot){
+        select.addEventListener('change', e=>{ dot.style.background = LABELS[e.target.value].color; note.dataset.label = e.target.value; });
+      }
+    }
+
+    function getDragAfterElement(container, y){
+      const draggableElements = [...container.querySelectorAll('.note:not(.dragging):not(.hidden)')];
+      return draggableElements.reduce((closest, child)=>{
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height/2;
+        if(offset < 0 && offset > closest.offset){
+          return {offset: offset, element: child};
+        } else return closest;
+      }, {offset: Number.NEGATIVE_INFINITY}).element || null;
+    }
+
+    // Serialization/Export
+    function serializeNote(note){
+      const header = note.querySelector('.note-title').innerText || '';
+      const content = note.querySelector('.note-content').innerText || '';
+      const label = note.dataset.label || 'default';
+      return {header, content, label};
+    }
+
+    function exportLayout(){
+      const cols = [...board.querySelectorAll('.column')].map(col=>{
+        const id = col.dataset.id;
+        const notes = [...col.querySelectorAll('.notes .note')].map(n=>serializeNote(n));
+        return {id, notes};
+      });
+      return {columns: cols};
+    }
+
+    function downloadJSON(obj, name='layout.json'){
+      const data = JSON.stringify(obj, null, 2);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    exportBtn.addEventListener('click', ()=>{
+      const obj = exportLayout();
+      downloadJSON(obj, 'exported-layout.json');
+    });
+
+    importBtn.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{ const json = JSON.parse(reader.result); renderLayout(json); }catch(err){ alert('Invalid JSON file'); }
+      };
+      reader.readAsText(f);
+    });
+
+    undoBtn.addEventListener('click', ()=>{
+      if(!lastDeleted) return;
+      const col = board.querySelector(`.column[data-id="${lastDeleted.columnId}"]`);
+      if(!col){ // column removed? append to last column
+        const cols = board.querySelectorAll('.column');
+        if(cols.length) cols[cols.length-1].querySelector('.notes').appendChild(makeNoteFromData(lastDeleted.data));
+      } else {
+        const notes = col.querySelector('.notes');
+        const noteEl = makeNoteFromData(lastDeleted.data);
+        const idx = Math.max(0, Math.min(lastDeleted.index, notes.children.length));
+        if(idx >= notes.children.length) notes.appendChild(noteEl); else notes.insertBefore(noteEl, notes.children[idx]);
+      }
+      lastDeleted = null; undoBtn.disabled = true; undoBtn.classList.add('ghost');
+    });
+
+    function makeNoteFromData(data){
+      const n = createNote(data);
+      attachNoteListeners(n);
+      return n;
+    }
+
+    // Build UI from JSON layout
+    function renderLayout(layout){
+      board.innerHTML = '';
+      if(!layout || !Array.isArray(layout.columns)){
+        board.innerHTML = '<div style="color:var(--muted)">Invalid layout JSON: missing columns array</div>';
+        return;
+      }
+      layout.columns.forEach(colDef=>{
+        const col = makeColumn(colDef.id, colDef.title || colDef.id);
+        const notesContainer = col.querySelector('.notes');
+        if(Array.isArray(colDef.notes)){
+          colDef.notes.forEach(n=>{
+            const note = makeNoteFromData({header:n.header, content:n.content, label:n.label || 'default'});
+            notesContainer.appendChild(note);
+          });
+        }
+        board.appendChild(col);
+      });
+
+      // Attach dragover to the board to allow moving between columns
+      const noteContainers = board.querySelectorAll('.notes');
+      noteContainers.forEach(nc=>{
+        // already have dragover for insertion
+        nc.addEventListener('dragenter', e=> e.preventDefault());
+      });
+
+      // Attach listeners for dynamic notes
+      board.querySelectorAll('.note').forEach(n=> attachNoteListeners(n));
+
+      // Global dragover to allow dropping between columns when dragging over whitespace
+      board.addEventListener('dragover', (e)=> e.preventDefault());
+
+      // When dragging ends, make sure to remove dragging class
+      document.addEventListener('dragend', ()=>{
+        const d = document.querySelector('.note.dragging'); if(d) d.classList.remove('dragging');
+      });
+    }
+
+    // Search filter
+    searchInput.addEventListener('input', ()=>{
+      const q = searchInput.value.trim().toLowerCase();
+      const notes = board.querySelectorAll('.note');
+      notes.forEach(n=>{
+        const head = n.querySelector('.note-title').innerText.toLowerCase();
+        const body = n.querySelector('.note-content').innerText.toLowerCase();
+        if(q === '' || head.includes(q) || body.includes(q)) n.classList.remove('hidden'); else n.classList.add('hidden');
+      });
+    });
+
+    // Utility: load example-layout.json on start
+    function tryLoadInitial(){
+      // Attempt to fetch the external example-layout.json. If unavailable (for example when opened via file://),
+      // fall back to the embedded copy (EMBEDDED_EXAMPLE) so the app always initializes to the provided layout.
+      fetch('example-layout.json')
+        .then(r=>{
+          if(!r.ok) throw new Error('Fetch failed');
+          return r.json();
+        })
+        .then(json=>{
+          renderLayout(json);
+        })
+        .catch(err=>{
+          console.warn('Could not fetch example-layout.json automatically — using embedded example:', err);
+          renderLayout(EMBEDDED_EXAMPLE);
+        });
+    }
+
+    // On first load
+    tryLoadInitial();
+
+    // Expose some debug helpers to console for reviewers
+    window.NOTES_APP = {
+      renderLayout, exportLayout, LABELS
+    };
+
+  })();
+  </script>
+</body>
+</html>
