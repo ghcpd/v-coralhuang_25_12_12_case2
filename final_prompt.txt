@@ -1,0 +1,23 @@
+You are given an existing single-page app stored in **`input.html`**, which implements a drag-and-drop note organizer using jQuery UI portlets.
+
+Your task is to produce an **enhanced implementation** of this application along with accompanying documentation.
+**Your deliverables do NOT need to be HTML files specifically** — any format is acceptable **as long as the solution fulfills the functional requirements** and demonstrates the enhanced behavior clearly.
+
+You will also be given a **JSON layout file (`example-layout.json`)**, and your output must demonstrate that the enhanced solution can correctly import this JSON and produce the **post-import layout** in whatever form your enhanced solution renders.
+
+---
+
+# **1. Existing Behavior (for context)**
+
+`input.html` currently:
+
+* Displays multiple `.column` containers
+* Contains draggable notes (“portlets”) using jQuery UI sortable
+* Each portlet has a header and a content area
+* The header icon collapses/expands the content
+
+All existing behaviors must remain supported in the enhanced version.
+
+---
+
+# **2. Required Feature Improvements**
