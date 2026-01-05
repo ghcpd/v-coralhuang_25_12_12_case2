@@ -21,3 +21,130 @@ All existing behaviors must remain supported in the enhanced version.
 ---
 
 # **2. Required Feature Improvements**
+
+Your enhanced solution must support all of the following features:
+
+---
+
+## **2.1 Add & Delete Notes**
+
+* Provide a mechanism to add new notes to a chosen column
+* New notes must be draggable, editable, and deletable (via “✕” button)
+
+---
+
+## **2.2 Scrollable Long Notes**
+
+* Note content areas must support long text
+* Use fixed/max height + `overflow: auto`
+
+---
+
+## **2.3 Import & Export as JSON**
+
+Your enhanced solution must:
+
+* **Export** the entire layout structure (columns → ordered notes → header, content, label)
+* **Import** a JSON layout and reconstruct the UI identically
+
+**New Requirement:**
+You will receive a JSON file `example-layout.json`.
+Your final answer must demonstrate the **correct imported result**, i.e., your enhanced solution must initialize itself using the provided JSON so reviewers can verify correctness.
+
+---
+
+## **2.4 Visual Appearance Upgrade**
+
+You must significantly improve the UI aesthetics:
+
+* cleaner spacing/alignment
+* modernized backgrounds/colors
+* rounded corners, shadows, cleaner borders
+* improved typography
+* clearer hover/drag cues
+* consistent column spacing
+
+---
+
+## **2.5 Note Labels / Color Coding**
+
+* Users can assign labels/colors to notes
+* Appearance changes accordingly
+* Labels must be preserved during import/export
+
+---
+
+## **2.6 Search / Filter Notes**
+
+* Search bar filters notes in real time by header or content text
+
+---
+
+## **2.7 Undo Last Delete**
+
+* Support undoing the most recently deleted note
+* Only one-level undo is required
+
+---
+
+# **3. Output Requirements**
+
+Your final answer must include **two deliverables** — format is flexible.
+
+---
+
+## **3.1 Enhanced Implementation (“enhanced_app.*”)**
+
+Your enhanced solution may be delivered in **any appropriate format**, such as:
+
+* `enhanced.html`
+* `enhanced_app.js` + instructions
+* A bundled file structure
+* A markdown-based pseudo-UI
+* Any runnable or displayable format
+
+As long as it:
+
+* Implements all feature requirements (2.1–2.7)
+* Preserves drag-and-drop and collapse/expand behaviors
+* Does **not** modify `input.html`
+* **Begins in the state produced by importing the provided JSON layout**
+
+---
+
+## **3.2 Documentation (`README.md`)**
+
+Must clearly explain:
+
+* Overview of enhancements
+* How to use all interactive features:
+
+  * add/delete notes
+  * label/color assignment
+  * search/filter
+  * import/export
+  * undo delete
+  * scrollable content
+  * drag-and-drop
+* Technical notes and design decisions
+* Explanation of file structure
+* Clarification that `input.html` remains unchanged
+
+---
+
+# **4. Constraints**
+
+* Output **exactly two files**
+
+  * Enhanced implementation (any format)
+  * README.md
+* No external frameworks or build tools
+* Must run/display in a modern browser or environment as described
+* Must start in a state reflecting the imported JSON layout
+
+---
+
+# **5. Final Deliverables**
+
+1. **Enhanced implementation** (`enhanced_app.*`)
+2. **`README.md`**
