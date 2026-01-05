@@ -9,18 +9,20 @@
   <style>
   body {
     min-width: 520px;
+    font-family: Arial, sans-serif;
   }
   .column {
-    width: 170px;
+    width: 220px;
     float: left;
     padding-bottom: 100px;
+    margin-right: 10px;
   }
   .portlet {
     margin: 0 1em 1em 0;
     padding: 0.3em;
   }
   .portlet-header {
-    padding: 0.2em 0.3em;
+    padding: 0.2em 0.4em;
     margin-bottom: 0.5em;
     position: relative;
   }
@@ -38,67 +40,128 @@
     margin: 0 1em 1em 0;
     height: 50px;
   }
+  .column-title {
+    font-weight: bold;
+    margin: 0 0 0.5em 0.2em;
+  }
+  .clearfix::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
   </style>
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
   <script>
-  $( function() {
-    $( ".column" ).sortable({
+  $(function() {
+    $(".column").sortable({
       connectWith: ".column",
       handle: ".portlet-header",
       cancel: ".portlet-toggle",
       placeholder: "portlet-placeholder ui-corner-all"
     });
 
-    $( ".portlet" )
-      .addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
-      .find( ".portlet-header" )
-        .addClass( "ui-widget-header ui-corner-all" )
-        .prepend( "<span class='ui-icon ui-icon-minusthick portlet-toggle'></span>");
+    $(".portlet")
+      .addClass("ui-widget ui-widget-content ui-helper-clearfix ui-corner-all")
+      .find(".portlet-header")
+        .addClass("ui-widget-header ui-corner-all")
+        .prepend("<span class='ui-icon ui-icon-minusthick portlet-toggle'></span>");
 
-    $( ".portlet-toggle" ).on( "click", function() {
-      var icon = $( this );
-      icon.toggleClass( "ui-icon-minusthick ui-icon-plusthick" );
-      icon.closest( ".portlet" ).find( ".portlet-content" ).toggle();
+    $(".portlet-toggle").on("click", function() {
+      var icon = $(this);
+      icon.toggleClass("ui-icon-minusthick ui-icon-plusthick");
+      icon.closest(".portlet").find(".portlet-content").toggle();
     });
-  } );
+  });
   </script>
 </head>
 <body>
 
-<div class="column">
+<div class="clearfix">
 
-  <div class="portlet">
-    <div class="portlet-header">🚀 Feeds</div>
-    <div class="portlet-content">A young Florida father-to-be</div>
+  <div class="column">
+    <div class="column-title">Today</div>
+
+    <div class="portlet">
+      <div class="portlet-header">Today's Tasks</div>
+      <div class="portlet-content">
+        - Reply to customer emails<br>
+        - Finish the new dashboard prototype<br>
+        - Prepare slides for the 3 PM meeting
+      </div>
+    </div>
+
+    <div class="portlet">
+      <div class="portlet-header">Quick Notes</div>
+      <div class="portlet-content">
+        Capture any small ideas or reminders here before they are forgotten.
+      </div>
+    </div>
+
   </div>
 
-  <div class="portlet">
-    <div class="portlet-header">News</div>
-    <div class="portlet-content">Fake or otherwise</div>
+  <div class="column">
+    <div class="column-title">Work</div>
+
+    <div class="portlet">
+      <div class="portlet-header">Meeting Notes</div>
+      <div class="portlet-content">
+        Project kickoff summary:<br>
+        - Align on scope for the first milestone<br>
+        - Confirm API contracts with backend team<br>
+        - Decide ownership for follow-up tasks
+      </div>
+    </div>
+
+    <div class="portlet">
+      <div class="portlet-header">Ideas</div>
+      <div class="portlet-content">
+        Consider adding a quick action panel on the home screen to reduce navigation steps.
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <div class="column">
+    <div class="column-title">Personal</div>
 
-<div class="column">
+    <div class="portlet">
+      <div class="portlet-header">Grocery List</div>
+      <div class="portlet-content">
+        Milk, eggs, bread, oranges, coffee beans, cat food, vitamin C.
+      </div>
+    </div>
 
-  <div class="portlet">
-    <div class="portlet-header">🏺 Shopping</div>
-    <div class="portlet-content">Stay off of Amazon</div>
+    <div class="portlet">
+      <div class="portlet-header">Reading List</div>
+      <div class="portlet-content">
+        - Deep Work<br>
+        - Atomic Habits<br>
+        - Clean Architecture
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <div class="column">
+    <div class="column-title">References</div>
 
-<div class="column">
+    <div class="portlet">
+      <div class="portlet-header">Useful Links</div>
+      <div class="portlet-content">
+        1. Color palette generator: https://coolors.co<br>
+        2. Free stock photos: https://unsplash.com<br>
+        3. Tech blog: https://overreacted.io
+      </div>
+    </div>
 
-  <div class="portlet">
-    <div class="portlet-header">👑 Links</div>
-    <div class="portlet-content">Links are for dinks</div>
-  </div>
+    <div class="portlet">
+      <div class="portlet-header">Snippets</div>
+      <div class="portlet-content">
+        Keep small code snippets, commands or configuration fragments here for quick access.
+      </div>
+    </div>
 
-  <div class="portlet">
-    <div class="portlet-header">🛕 Images</div>
-    <div class="portlet-content">We don't want no stinkin images</div>
   </div>
 
 </div>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enhanced Note Organizer</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 28px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+      border: 2px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+      background: #e8e8e8;
+      border-color: #d0d0d0;
+    }
+
+    .btn-danger {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #ee5a5a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-success {
+      background: #51cf66;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #40c057;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(81, 207, 102, 0.4);
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .columns-wrapper {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+    }
+
+    .column {
+      flex: 0 0 300px;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      min-height: 400px;
+    }
+
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .column-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      margin: 0;
+    }
+
+    .add-note-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .notes-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .portlet {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: move;
+      transition: all 0.3s;
+      border-left: 4px solid #667eea;
+    }
+
+    .portlet:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Label color coding */
+    .portlet.label-important {
+      border-left-color: #ff6b6b;
+      background: linear-gradient(135deg, #ffe3e3 0%, #ffa8a8 100%);
+    }
+
+    .portlet.label-idea {
+      border-left-color: #ffd43b;
+      background: linear-gradient(135deg, #fff3bf 0%, #ffe066 100%);
+    }
+
+    .portlet.label-personal {
+      border-left-color: #51cf66;
+      background: linear-gradient(135deg, #d3f9d8 0%, #94d82d 100%);
+    }
+
+    .portlet.label-reference {
+      border-left-color: #74c0fc;
+      background: linear-gradient(135deg, #d0ebff 0%, #74c0fc 100%);
+    }
+
+    .portlet.label-study {
+      border-left-color: #b197fc;
+      background: linear-gradient(135deg, #e5dbff 0%, #c0a9e8 100%);
+    }
+
+    .portlet.label-default {
+      border-left-color: #94a3b8;
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    }
+
+    .portlet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+      user-select: none;
+      cursor: grab;
+    }
+
+    .portlet-header:active {
+      cursor: grabbing;
+    }
+
+    .portlet-header-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .portlet-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: 8px;
+    }
+
+    .portlet-toggle, .portlet-delete, .portlet-edit {
+      background: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .portlet-toggle:hover, .portlet-delete:hover, .portlet-edit:hover {
+      color: #333;
+      transform: scale(1.1);
+    }
+
+    .portlet-delete:hover {
+      color: #ff6b6b;
+    }
+
+    .portlet-content {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      max-height: 200px;
+      overflow-y: auto;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .portlet-label {
+      font-size: 11px;
+      margin-top: 8px;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 4px;
+      display: inline-block;
+      font-weight: 500;
+      color: #666;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea.form-input {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .undo-message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 999;
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .filter-info {
+      color: #667eea;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 5px;
+    }
+
+    .no-results {
+      text-align: center;
+      color: #999;
+      padding: 30px 10px;
+      font-size: 14px;
+    }
+
+    /* Scrollbar styling */
+    .notes-container::-webkit-scrollbar,
+    .portlet-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .notes-container::-webkit-scrollbar-track,
+    .portlet-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .notes-container::-webkit-scrollbar-thumb,
+    .portlet-content::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+
+    .notes-container::-webkit-scrollbar-thumb:hover,
+    .portlet-content::-webkit-scrollbar-thumb:hover {
+      background: #5568d3;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+      }
+
+      .search-box {
+        min-width: 100%;
+      }
+
+      .button-group {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .button-group button {
+        width: 100%;
+      }
+
+      .columns-wrapper {
+        flex-direction: column;
+      }
+
+      .column {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 Enhanced Note Organizer</h1>
+      <div class="controls">
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="🔍 Search notes by title or content..."
+            autocomplete="off"
+          >
+          <div id="filterInfo" class="filter-info hidden"></div>
+        </div>
+        <div class="button-group">
+          <button class="btn-primary" onclick="openAddNoteModal()">➕ Add Note</button>
+          <button class="btn-secondary" onclick="exportLayout()">💾 Export</button>
+          <button class="btn-secondary" onclick="openImportModal()">📥 Import</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns-wrapper" id="columnsWrapper"></div>
+  </div>
+
+  <!-- Modal for adding/editing notes -->
+  <div id="noteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" id="modalTitle">Add New Note</div>
+      <div class="form-group">
+        <label class="form-label">Select Column:</label>
+        <select id="columnSelect" class="form-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note Title:</label>
+        <input type="text" id="noteHeader" class="form-input" placeholder="Enter note title...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note Content:</label>
+        <textarea id="noteContent" class="form-input" placeholder="Enter note content..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Label / Color:</label>
+        <select id="noteLabel" class="form-select">
+          <option value="default">Default</option>
+          <option value="important">⚠️ Important</option>
+          <option value="idea">💡 Idea</option>
+          <option value="personal">👤 Personal</option>
+          <option value="reference">🔗 Reference</option>
+          <option value="study">📚 Study</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for importing JSON -->
+  <div id="importModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">Import Layout from JSON</div>
+      <div class="form-group">
+        <label class="form-label">Paste JSON:</label>
+        <textarea id="jsonInput" class="form-input" placeholder="Paste your JSON layout here..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeImportModal()">Cancel</button>
+        <button class="btn-primary" onclick="importLayout()">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+  <script>
+    // Global state
+    let appState = {
+      columns: [],
+      deletedNote: null,
+      searchQuery: ''
+    };
+
+    // Initialize the app with example JSON on page load
+    function initializeApp() {
+      // Use the example layout JSON
+      const exampleLayout = {
+        "columns": [
+          {
+            "id": "col-1",
+            "title": "Today",
+            "notes": [
+              {
+                "header": "📌 Today's Tasks",
+                "content": "- Reply to customer emails (urgent)\n- Finalize the prototype for the new dashboard\n- Design review at 3 PM\n- Update weekly team status\n\nReminder: Align the goals for this sprint before Thursday.",
+                "label": "important"
+              },
+              {
+                "header": "💡 Random Idea",
+                "content": "Maybe we should explore adding a Quick Actions panel on the homepage to reduce multi-step navigation. Conduct user interviews to validate the need.",
+                "label": "idea"
+              }
+            ]
+          },
+          {
+            "id": "col-2",
+            "title": "Work",
+            "notes": [
+              {
+                "header": "📝 Meeting Notes — Feb 17, 2025",
+                "content": "Attendees: Product, Design, Engineering\nTopic: Clarifying requirements for the new Task Center\n\nKey Agreements:\n1. MVP will not include cross-project linking.\n2. Must support list and board views for launch.\n3. Notification redesign postponed to Q2.\n\nAction Items:\n- Product: Update requirements doc.\n- Design: Provide two interaction concepts by next week.\n- Engineering: Estimate development effort by Wednesday.",
+                "label": "default"
+              }
+            ]
+          },
+          {
+            "id": "col-3",
+            "title": "Personal",
+            "notes": [
+              {
+                "header": "🛒 Grocery List",
+                "content": "• Milk (2 cartons)\n• Eggs (dozen)\n• Whole grain bread\n• Orange juice\n• Cat food (large bag)\n• Vitamin C — keep forgetting to buy this",
+                "label": "personal"
+              },
+              {
+                "header": "🔗 Useful Links",
+                "content": "1. Color palette generator: https://coolors.co\n2. Free stock photos: https://unsplash.com\n3. Tech blog: https://overreacted.io",
+                "label": "reference"
+              },
+              {
+                "header": "📚 Reading Notes: Deep Work",
+                "content": "Key Takeaways:\n- Deep work produces disproportionate value.\n- Reduce fragmented time and build deliberate workflows.\n\nQuote:\n\"The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.\"",
+                "label": "study"
+              }
+            ]
+          }
+        ]
+      };
+
+      appState.columns = exampleLayout.columns.map((col, index) => ({
+        ...col,
+        id: col.id || `col-${index + 1}`,
+        title: col.title || `Column ${index + 1}`,
+        notes: (col.notes || []).map((note, noteIndex) => ({
+          ...note,
+          id: `note-${Math.random().toString(36).substr(2, 9)}`
+        }))
+      }));
+
+      renderColumns();
+    }
+
+    function renderColumns() {
+      const wrapper = document.getElementById('columnsWrapper');
+      wrapper.innerHTML = '';
+
+      appState.columns.forEach(column => {
+        const columnEl = document.createElement('div');
+        columnEl.className = 'column';
+        columnEl.dataset.columnId = column.id;
+
+        const filteredNotes = filterNotesBySearch(column.notes);
+        const noResultsMsg = appState.searchQuery && filteredNotes.length === 0 
+          ? '<div class="no-results">No matching notes</div>' 
+          : '';
+
+        columnEl.innerHTML = `
+          <div class="column-header">
+            <h3 class="column-title">${column.title}</h3>
+            <button class="btn-primary btn-small add-note-btn" onclick="openAddNoteModal('${column.id}')">+</button>
+          </div>
+          <div class="notes-container" data-column-id="${column.id}">
+            ${filteredNotes.map(note => renderNote(note, column.id)).join('')}
+            ${noResultsMsg}
+          </div>
+        `;
+
+        wrapper.appendChild(columnEl);
+      });
+
+      initializeSortable();
+      updateColumnSelect();
+    }
+
+    function renderNote(note, columnId) {
+      const labelClass = `label-${note.label || 'default'}`;
+      const labelText = {
+        'important': '⚠️ Important',
+        'idea': '💡 Idea',
+        'personal': '👤 Personal',
+        'reference': '🔗 Reference',
+        'study': '📚 Study',
+        'default': '🏷️ Default'
+      }[note.label || 'default'];
+
+      return `
+        <div class="portlet ${labelClass}" data-note-id="${note.id}">
+          <div class="portlet-header">
+            <div class="portlet-header-text">${note.header}</div>
+            <div class="portlet-actions">
+              <button class="portlet-edit" onclick="openEditNoteModal('${note.id}', '${columnId}')" title="Edit">✎</button>
+              <button class="portlet-toggle" title="Toggle">−</button>
+              <button class="portlet-delete" onclick="deleteNote('${note.id}', '${columnId}')" title="Delete">✕</button>
+            </div>
+          </div>
+          <div class="portlet-content">${escapeHtml(note.content)}</div>
+          <div class="portlet-label">${labelText}</div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function filterNotesBySearch(notes) {
+      if (!appState.searchQuery) return notes;
+
+      const query = appState.searchQuery.toLowerCase();
+      return notes.filter(note => 
+        note.header.toLowerCase().includes(query) || 
+        note.content.toLowerCase().includes(query)
+      );
+    }
+
+    function initializeSortable() {
+      $('.notes-container').sortable({
+        connectWith: '.notes-container',
+        handle: '.portlet-header',
+        cancel: '.portlet-toggle, .portlet-delete, .portlet-edit',
+        placeholder: 'ui-state-highlight',
+        update: function(event, ui) {
+          updateColumnContent();
+        }
+      });
+
+      $('.portlet-toggle').off('click').on('click', function() {
+        $(this).closest('.portlet').find('.portlet-content').slideToggle(300);
+      });
+    }
+
+    function updateColumnContent() {
+      appState.columns.forEach(column => {
+        const container = document.querySelector(`[data-column-id="${column.id}"]`);
+        if (container) {
+          const noteElements = container.querySelectorAll('[data-note-id]');
+          const noteIds = Array.from(noteElements).map(el => el.dataset.noteId);
+          
+          column.notes = noteIds.map(id => 
+            appState.columns.flatMap(c => c.notes).find(n => n.id === id)
+          ).filter(Boolean);
+        }
+      });
+    }
+
+    function updateColumnSelect() {
+      const select = document.getElementById('columnSelect');
+      select.innerHTML = appState.columns.map(col => 
+        `<option value="${col.id}">${col.title}</option>`
+      ).join('');
+    }
+
+    function openAddNoteModal(columnId) {
+      document.getElementById('modalTitle').textContent = 'Add New Note';
+      document.getElementById('noteHeader').value = '';
+      document.getElementById('noteContent').value = '';
+      document.getElementById('noteLabel').value = 'default';
+      
+      if (columnId) {
+        document.getElementById('columnSelect').value = columnId;
+      }
+      
+      document.getElementById('noteModal').classList.add('show');
+      document.getElementById('noteHeader').focus();
+      document.getElementById('noteModal').dataset.editMode = 'false';
+    }
+
+    function openEditNoteModal(noteId, columnId) {
+      document.getElementById('modalTitle').textContent = 'Edit Note';
+      document.getElementById('columnSelect').value = columnId;
+      document.getElementById('columnSelect').disabled = true;
+      
+      const note = appState.columns.flatMap(c => c.notes).find(n => n.id === noteId);
+      if (note) {
+        document.getElementById('noteHeader').value = note.header;
+        document.getElementById('noteContent').value = note.content;
+        document.getElementById('noteLabel').value = note.label || 'default';
+      }
+      
+      document.getElementById('noteModal').classList.add('show');
+      document.getElementById('noteHeader').focus();
+      document.getElementById('noteModal').dataset.editMode = 'true';
+      document.getElementById('noteModal').dataset.editNoteId = noteId;
+    }
+
+    function closeModal() {
+      document.getElementById('noteModal').classList.remove('show');
+      document.getElementById('columnSelect').disabled = false;
+      document.getElementById('noteModal').dataset.editMode = 'false';
+    }
+
+    function saveNote() {
+      const header = document.getElementById('noteHeader').value.trim();
+      const content = document.getElementById('noteContent').value.trim();
+      const columnId = document.getElementById('columnSelect').value;
+      const label = document.getElementById('noteLabel').value;
+
+      if (!header || !content) {
+        alert('Please fill in both title and content.');
+        return;
+      }
+
+      const column = appState.columns.find(c => c.id === columnId);
+      if (!column) {
+        alert('Column not found.');
+        return;
+      }
+
+      const editMode = document.getElementById('noteModal').dataset.editMode === 'true';
+      if (editMode) {
+        const noteId = document.getElementById('noteModal').dataset.editNoteId;
+        const note = column.notes.find(n => n.id === noteId);
+        if (note) {
+          note.header = header;
+          note.content = content;
+          note.label = label;
+        }
+      } else {
+        column.notes.push({
+          id: `note-${Math.random().toString(36).substr(2, 9)}`,
+          header,
+          content,
+          label
+        });
+      }
+
+      closeModal();
+      renderColumns();
+    }
+
+    function deleteNote(noteId, columnId) {
+      const column = appState.columns.find(c => c.id === columnId);
+      const noteIndex = column.notes.findIndex(n => n.id === noteId);
+      
+      if (noteIndex !== -1) {
+        const note = column.notes[noteIndex];
+        appState.deletedNote = { note, columnId, noteIndex };
+        column.notes.splice(noteIndex, 1);
+        
+        renderColumns();
+        showUndoMessage();
+      }
+    }
+
+    function showUndoMessage() {
+      const undoEl = document.createElement('div');
+      undoEl.className = 'undo-message';
+      undoEl.innerHTML = `
+        <span>Note deleted</span>
+        <button class="btn-secondary btn-small" onclick="undoDelete(); this.parentElement.remove();">Undo</button>
+      `;
+      document.body.appendChild(undoEl);
+
+      setTimeout(() => {
+        if (undoEl.parentElement) {
+          undoEl.remove();
+          appState.deletedNote = null;
+        }
+      }, 5000);
+    }
+
+    function undoDelete() {
+      if (appState.deletedNote) {
+        const { note, columnId, noteIndex } = appState.deletedNote;
+        const column = appState.columns.find(c => c.id === columnId);
+        if (column) {
+          column.notes.splice(noteIndex, 0, note);
+          renderColumns();
+          appState.deletedNote = null;
+        }
+      }
+    }
+
+    function exportLayout() {
+      const layout = {
+        columns: appState.columns.map(col => ({
+          id: col.id,
+          title: col.title,
+          notes: col.notes.map(note => ({
+            header: note.header,
+            content: note.content,
+            label: note.label || 'default'
+          }))
+        }))
+      };
+
+      const json = JSON.stringify(layout, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'notes-layout.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function openImportModal() {
+      document.getElementById('jsonInput').value = '';
+      document.getElementById('importModal').classList.add('show');
+      document.getElementById('jsonInput').focus();
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('show');
+    }
+
+    function importLayout() {
+      const jsonText = document.getElementById('jsonInput').value.trim();
+      
+      try {
+        const layout = JSON.parse(jsonText);
+        
+        if (!layout.columns || !Array.isArray(layout.columns)) {
+          throw new Error('Invalid layout structure. Expected "columns" array.');
+        }
+
+        appState.columns = layout.columns.map((col, index) => ({
+          ...col,
+          id: col.id || `col-${index + 1}`,
+          title: col.title || `Column ${index + 1}`,
+          notes: (col.notes || []).map(note => ({
+            id: `note-${Math.random().toString(36).substr(2, 9)}`,
+            header: note.header || 'Untitled',
+            content: note.content || '',
+            label: note.label || 'default'
+          }))
+        }));
+
+        closeImportModal();
+        appState.searchQuery = '';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterInfo').classList.add('hidden');
+        renderColumns();
+        alert('Layout imported successfully!');
+      } catch (error) {
+        alert(`Import failed: ${error.message}`);
+      }
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      appState.searchQuery = e.target.value.trim();
+      const filterInfo = document.getElementById('filterInfo');
+
+      if (appState.searchQuery) {
+        const matchCount = appState.columns
+          .flatMap(c => c.notes)
+          .filter(n => filterNotesBySearch([n]).length > 0).length;
+        filterInfo.textContent = `${matchCount} note${matchCount !== 1 ? 's' : ''} found`;
+        filterInfo.classList.remove('hidden');
+      } else {
+        filterInfo.classList.add('hidden');
+      }
+
+      renderColumns();
+    });
+
+    // Close modals on outside click
+    document.getElementById('noteModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    document.getElementById('importModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeImportModal();
+      }
+    });
+
+    // Initialize on load
+    window.addEventListener('load', initializeApp);
+  </script>
+</body>
+</html>
