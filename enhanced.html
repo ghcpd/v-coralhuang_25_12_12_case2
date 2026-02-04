@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enhanced Notes Organizer</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --muted:#6b7280; --accent:#3b82f6;
+      --shadow: 0 6px 18px rgba(18,38,63,0.08);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#eef2ff 0%, #f8fafc 100%);}
+    header{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid rgba(0,0,0,0.04);background:linear-gradient(90deg, #fff,#f7fbff);}
+    header h1{font-size:18px;margin:0;color:#0f1729;letter-spacing:-0.2px}
+    .controls{margin-left:auto;display:flex;gap:10px;align-items:center}
+    .btn{background:var(--card);border:1px solid rgba(15,23,41,0.06);padding:8px 10px;border-radius:8px;box-shadow:var(--shadow);cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,#4f46e5,#06b6d4);color:#fff;border:none}
+    .toolbar{display:flex;gap:12px;align-items:center}
+    .container{display:flex;gap:12px;padding:18px;flex-wrap:wrap}
+    .column{width:280px;background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:12px;padding:12px;box-shadow:var(--shadow);border:1px solid rgba(15,23,41,0.04)}
+    .column-title{font-weight:600;color:#0f1729;margin-bottom:10px}
+    .portlet{background:var(--card);border-radius:10px;padding:0;margin-bottom:10px;border:1px solid rgba(15,23,41,0.05);overflow:hidden}
+    .portlet-header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid rgba(15,23,41,0.03);cursor:grab}
+    .portlet-header .title{flex:1;font-weight:600}
+    .label-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+    .portlet-content{padding:12px;max-height:180px;overflow:auto;color:#374151}
+    .portlet-actions{display:flex;gap:6px;align-items:center}
+    .portlet-actions button{border:none;background:transparent;cursor:pointer;color:var(--muted)}
+    .placeholder{border:2px dashed rgba(15,23,41,0.08);margin-bottom:10px;height:64px;border-radius:10px}
+    .add-panel{display:flex;gap:8px;align-items:center}
+    .add-input{padding:8px;border-radius:8px;border:1px solid rgba(15,23,41,0.06);width:220px}
+    .label-select{border-radius:6px;padding:6px;border:1px solid rgba(15,23,41,0.06)}
+    .top-actions{display:flex;gap:10px;align-items:center}
+    .search{padding:8px;border-radius:10px;border:1px solid rgba(15,23,41,0.06);width:260px}
+    .portlet.collapsed .portlet-content{display:none}
+    .portlet-header .collapse{cursor:pointer}
+    .edit-input{width:100%;padding:8px;border:1px solid rgba(15,23,41,0.06);border-radius:6px}
+    footer{padding:10px 22px;color:var(--muted);font-size:12px}
+    .label-pill{padding:4px 8px;border-radius:999px;font-size:12px;color:#fff}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Enhanced Notes Organizer</h1>
+    <div class="controls">
+      <input id="search" class="search" placeholder="Search notes by header or content">
+      <div class="top-actions">
+        <div class="add-panel">
+          <select id="add-column" class="label-select"></select>
+          <input id="add-header" placeholder="New note title" class="add-input">
+          <select id="add-label" class="label-select">
+            <option value="default">Default</option>
+            <option value="important">Important</option>
+            <option value="idea">Idea</option>
+            <option value="personal">Personal</option>
+            <option value="reference">Reference</option>
+            <option value="study">Study</option>
+          </select>
+          <button id="add-note" class="btn primary">Add</button>
+        </div>
+        <button id="undo-delete" class="btn" title="Undo last delete">Undo</button>
+        <button id="export-json" class="btn">Export</button>
+        <input id="import-file" type="file" accept="application/json" class="hidden">
+        <button id="import-json" class="btn">Import</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="columns" class="container"></div>
+  </main>
+  <footer>Drag notes by the header. Use the label dropdown when adding or editing. Note content areas are scrollable.</footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+  <script>
+    // Label color map
+    const LABELS = {
+      default: {color:'#64748b', text:'Default'},
+      important: {color:'#ef4444', text:'Important'},
+      idea: {color:'#f59e0b', text:'Idea'},
+      personal: {color:'#10b981', text:'Personal'},
+      reference: {color:'#6366f1', text:'Reference'},
+      study: {color:'#06b6d4', text:'Study'}
+    };
+
+    let layoutJSON=null;
+    let lastDeleted=null;
+
+    function buildNote(note){
+      const p = $("<div class='portlet' data-label='"+(note.label||'default')+"'></div>");
+      const header = $("<div class='portlet-header'></div>");
+      const labelDot = $("<span class='label-dot'></span>").css('background', LABELS[(note.label||'default')].color);
+      header.append(labelDot);
+      header.append($('<div class="title"></div>').text(note.header));
+      const actions = $('<div class="portlet-actions"></div>');
+      actions.append(`<button class='edit' title='Edit'>✎</button>`);
+      actions.append(`<button class='collapse' title='Collapse'>▾</button>`);
+      actions.append(`<button class='delete' title='Delete'>✕</button>`);
+      header.append(actions);
+      const content = $('<div class="portlet-content"></div>').html(note.content.replace(/\n/g,'<br>'));
+      p.append(header).append(content);
+      p.find('.delete').on('click', function(){ deleteNote(p); });
+      p.find('.collapse').on('click', function(){ p.toggleClass('collapsed'); });
+      p.find('.edit').on('click', function(){ openEdit(p); });
+      return p;
+    }
+
+    function deleteNote(portlet){
+      const col = portlet.closest('.column');
+      const colId = col.data('id');
+      const index = col.find('.portlet').index(portlet);
+      lastDeleted = {node: portlet, colId, index};
+      portlet.fadeOut(180, function(){ $(this).remove(); });
+    }
+
+    function undoDelete(){
+      if(!lastDeleted) return;
+      const column = $(`.column[data-id='${lastDeleted.colId}']`);
+      if(column.length===0) return;
+      const portlets = column.find('.portlet');
+      // Reinsert at index
+      if(lastDeleted.index >= portlets.length){
+        column.append(lastDeleted.node);
+      } else {
+        portlets.eq(lastDeleted.index).before(lastDeleted.node);
+      }
+      lastDeleted.node.show();
+      lastDeleted=null;
+      makeSortable();
+    }
+
+    function openEdit(portlet){
+      const header = portlet.find('.title');
+      const content = portlet.find('.portlet-content');
+      const labelKey = portlet.data('label') || 'default';
+      const headerVal = header.text();
+      const contentVal = content.html().replace(/<br>/g,'\n');
+      // Replace with inputs
+      const headerInput = $(`<input class='edit-input' type='text' value='${$('<div>').text(headerVal).html()}'>`);
+      const contentArea = $(`<textarea class='edit-input' rows='6'>${$('<div>').text(contentVal).html()}</textarea>`);
+      const labelSelect = $('<select class="label-select"></select>');
+      Object.keys(LABELS).forEach(k=>labelSelect.append(`<option value='${k}'>${LABELS[k].text}</option>`));
+      labelSelect.val(labelKey);
+      const saveBtn = $(`<button class='btn'>Save</button>`);
+      const cancelBtn = $(`<button class='btn'>Cancel</button>`);
+      const editor = $('<div class="editor" style="display:flex;flex-direction:column;gap:8px;padding:12px"></div>');
+      editor.append(headerInput).append(contentArea).append(labelSelect).append($('<div style="display:flex;gap:6px"></div>').append(saveBtn).append(cancelBtn));
+      portlet.find('.portlet-content').hide();
+      portlet.find('.portlet-header').after(editor);
+      saveBtn.on('click', function(){
+        header.text(headerInput.val());
+        content.html(contentArea.val().replace(/\n/g,'<br>'));
+        const newLabel=labelSelect.val();
+        portlet.data('label', newLabel);
+        portlet.find('.label-dot').css('background', LABELS[newLabel].color);
+        editor.remove();
+        portlet.find('.portlet-content').show();
+      });
+      cancelBtn.on('click', function(){ editor.remove(); portlet.find('.portlet-content').show(); });
+    }
+
+    function makeSortable(){
+      $('.column').sortable({
+        connectWith: '.column',
+        handle: '.portlet-header',
+        placeholder: 'placeholder',
+        tolerance: 'pointer'
+      }).disableSelection();
+    }
+
+    function buildColumn(col){
+      const c = $(`<div class='column' data-id='${col.id}'></div>`);
+      c.append(`<div class='column-title'>${col.title || col.id}</div>`);
+      const notesHolder = $('<div class="notes"></div>');
+      (col.notes||[]).forEach(n=>notesHolder.append(buildNote(n)));
+      c.append(notesHolder);
+      return c;
+    }
+
+    function renderLayout(layout){
+      const container = $('#columns');
+      container.empty();
+      layout.columns.forEach(col=>{
+        container.append(buildColumn(col));
+      });
+      // populate add column select
+      $('#add-column').empty();
+      layout.columns.forEach((col, idx)=> $('#add-column').append(`<option value='${col.id}'>${col.title||col.id}</option>`));
+      makeSortable();
+    }
+
+    function exportLayout(){
+      const cols = [];
+      $('.column').each(function(){
+        const col = {id: $(this).data('id'), title: $(this).find('.column-title').text(), notes: []};
+        $(this).find('.portlet').each(function(){
+          const header = $(this).find('.title').text();
+          const content = $(this).find('.portlet-content').html().replace(/<br>/g,'\n');
+          const label = $(this).data('label') || 'default';
+          col.notes.push({header, content, label});
+        });
+        cols.push(col);
+      });
+      const exportObj = {columns: cols};
+      const blob = new Blob([JSON.stringify(exportObj,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download='layout-export.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importFileJSON(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const obj = JSON.parse(e.target.result);
+        initializeFromJSON(obj);
+      }
+      reader.readAsText(file);
+    }
+
+    function initializeFromJSON(json){
+      // normalize: ensure titles
+      json.columns.forEach(col=>{ if(!col.title) col.title = col.id; });
+      layoutJSON = json;
+      renderLayout(json);
+    }
+
+    function addNoteToColumn(colId, header, content, label){
+      const column = $(`.column[data-id='${colId}']`);
+      if(column.length===0) return;
+      const noteObj = {header, content, label};
+      const portlet = buildNote(noteObj);
+      column.find('.notes').append(portlet);
+      // reset
+      $('#add-header').val('');
+      $('#add-label').val('default');
+      makeSortable();
+    }
+
+    function setupEventHandlers(){
+      $('#add-note').on('click', function(){
+        const colId = $('#add-column').val();
+        const header = $('#add-header').val().trim();
+        const label = $('#add-label').val();
+        if(!header){ alert('Please provide a title for the note'); return; }
+        addNoteToColumn(colId, header, 'New note content', label);
+      });
+
+      $('#export-json').on('click', exportLayout);
+      $('#import-json').on('click', ()=>$('#import-file').click());
+      $('#import-file').on('change', function(e){ const f=e.target.files[0]; if(f) importFileJSON(f); });
+      $('#undo-delete').on('click', undoDelete);
+      $('#search').on('input', function(){ const q=$(this).val().toLowerCase(); if(!q){ $('.portlet').show(); return; } $('.portlet').each(function(){ const h=$(this).find('.title').text().toLowerCase(); const c=$(this).find('.portlet-content').text().toLowerCase(); $(this).toggle(h.includes(q) || c.includes(q)); }) });
+    }
+
+    // load the provided example JSON by default
+    $(function(){
+      setupEventHandlers();
+      fetch('example-layout.json').then(r=>r.json()).then(json=>{
+        // convert ids for columns if not present
+        json.columns.forEach((c, idx)=>{ if(!c.id) c.id='col-'+(idx+1); if(!c.title) c.title=c.id });
+        initializeFromJSON(json);
+      }).catch(err=>{
+        // fallback: if fetch fails, load a simple default
+        const fallback = {columns:[{id:'col-1',title:'Column 1',notes:[]}]};
+        initializeFromJSON(fallback);
+      });
+    });
+
+  </script>
+</body>
+</html>
