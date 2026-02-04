@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enhanced Note Organizer</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <style>
+  body {
+    min-width: 520px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .search-bar {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .search-bar input {
+    width: 300px;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .search-bar input:focus {
+    border-color: #4a90e2;
+  }
+  .columns {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .column {
+    flex: 1;
+    min-width: 250px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+  }
+  .column-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+  }
+  .add-note-btn {
+    width: 100%;
+    padding: 10px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 15px;
+    transition: background 0.3s;
+  }
+  .add-note-btn:hover {
+    background: #357abd;
+  }
+  .portlet {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+  }
+  .portlet:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  .portlet.important { border-left: 5px solid #e74c3c; }
+  .portlet.idea { border-left: 5px solid #3498db; }
+  .portlet.default { border-left: 5px solid #95a5a6; }
+  .portlet.personal { border-left: 5px solid #2ecc71; }
+  .portlet.reference { border-left: 5px solid #f39c12; }
+  .portlet.study { border-left: 5px solid #9b59b6; }
+  .portlet-header {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .portlet-header-text {
+    flex: 1;
+    font-weight: bold;
+    color: #333;
+  }
+  .header-controls {
+    display: flex;
+    gap: 5px;
+  }
+  .label-select {
+    padding: 2px 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .delete-btn:hover {
+    background: #c0392b;
+  }
+  .portlet-toggle {
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .portlet-content {
+    padding: 15px;
+    background: white;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+  .portlet-placeholder {
+    border: 2px dashed #4a90e2;
+    margin-bottom: 15px;
+    height: 50px;
+    border-radius: 8px;
+    background: rgba(74, 144, 226, 0.1);
+  }
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .control-btn {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+  }
+  .control-btn:hover {
+    background: #218838;
+  }
+  .undo-btn {
+    background: #ffc107;
+    color: black;
+  }
+  .undo-btn:hover {
+    background: #e0a800;
+  }
+  .undo-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+  }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+  <script>
+  $(function() {
+    let deletedNotes = [];
+    let noteCounter = 0;
+
+    // Label colors
+    const labelClasses = {
+      important: 'important',
+      idea: 'idea',
+      default: 'default',
+      personal: 'personal',
+      reference: 'reference',
+      study: 'study'
+    };
+
+    // Load initial layout from embedded JSON
+    const initialLayout = {
+      "columns": [
+        {
+          "id": "col-1",
+          "notes": [
+            {
+              "header": "📌 Today's Tasks",
+              "content": "- Reply to customer emails (urgent)\n- Finalize the prototype for the new dashboard\n- Design review at 3 PM\n- Update weekly team status\n\nReminder: Align the goals for this sprint before Thursday.",
+              "label": "important"
+            },
+            {
+              "header": "💡 Random Idea",
+              "content": "Maybe we should explore adding a Quick Actions panel on the homepage to reduce multi-step navigation. Conduct user interviews to validate the need.",
+              "label": "idea"
+            }
+          ]
+        },
+        {
+          "id": "col-2",
+          "notes": [
+            {
+              "header": "📝 Meeting Notes — Feb 17, 2025",
+              "content": "Attendees: Product, Design, Engineering\nTopic: Clarifying requirements for the new Task Center\n\nKey Agreements:\n1. MVP will not include cross-project linking.\n2. Must support list and board views for launch.\n3. Notification redesign postponed to Q2.\n\nAction Items:\n- Product: Update requirements doc.\n- Design: Provide two interaction concepts by next week.\n- Engineering: Estimate development effort by Wednesday.",
+              "label": "default"
+            }
+          ]
+        },
+        {
+          "id": "col-3",
+          "notes": [
+            {
+              "header": "🛒 Grocery List",
+              "content": "• Milk (2 cartons)\n• Eggs (dozen)\n• Whole grain bread\n• Orange juice\n• Cat food (large bag)\n• Vitamin C — keep forgetting to buy this",
+              "label": "personal"
+            },
+            {
+              "header": "🔗 Useful Links",
+              "content": "1. Color palette generator: https://coolors.co\n2. Free stock photos: https://unsplash.com\n3. Tech blog: https://overreacted.io",
+              "label": "reference"
+            },
+            {
+              "header": "📚 Reading Notes: Deep Work",
+              "content": "Key Takeaways:\n- Deep work produces disproportionate value.\n- Reduce fragmented time and build deliberate workflows.\n\nQuote:\n\"The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.\"",
+              "label": "study"
+            }
+          ]
+        }
+      ]
+    };
+
+    function loadLayout(layout) {
+      $('.column').each(function(index) {
+        const column = $(this);
+        const colData = layout.columns[index];
+        if (colData) {
+          colData.notes.forEach(note => {
+            addNoteToColumn(column, note.header, note.content, note.label);
+          });
+        }
+      });
+    }
+
+    function addNoteToColumn(column, header, content, label) {
+      const noteId = 'note-' + noteCounter++;
+      const portlet = $(`
+        <div class="portlet ${labelClasses[label] || 'default'}" data-id="${noteId}">
+          <div class="portlet-header">
+            <div class="portlet-header-text" contenteditable="true">${header}</div>
+            <div class="header-controls">
+              <select class="label-select">
+                <option value="default" ${label === 'default' ? 'selected' : ''}>Default</option>
+                <option value="important" ${label === 'important' ? 'selected' : ''}>Important</option>
+                <option value="idea" ${label === 'idea' ? 'selected' : ''}>Idea</option>
+                <option value="personal" ${label === 'personal' ? 'selected' : ''}>Personal</option>
+                <option value="reference" ${label === 'reference' ? 'selected' : ''}>Reference</option>
+                <option value="study" ${label === 'study' ? 'selected' : ''}>Study</option>
+              </select>
+              <button class="delete-btn">✕</button>
+              <span class="ui-icon ui-icon-minusthick portlet-toggle"></span>
+            </div>
+          </div>
+          <div class="portlet-content" contenteditable="true">${content}</div>
+        </div>
+      `);
+      column.append(portlet);
+      setupNoteEvents(portlet);
+    }
+
+    function setupNoteEvents(portlet) {
+      portlet.find('.label-select').on('change', function() {
+        const label = $(this).val();
+        portlet.removeClass(Object.values(labelClasses).join(' ')).addClass(labelClasses[label]);
+      });
+
+      portlet.find('.delete-btn').on('click', function() {
+        const noteData = {
+          header: portlet.find('.portlet-header-text').text(),
+          content: portlet.find('.portlet-content').text(),
+          label: portlet.find('.label-select').val(),
+          columnIndex: $('.column').index(portlet.parent())
+        };
+        deletedNotes.push(noteData);
+        portlet.remove();
+        $('.undo-btn').prop('disabled', false);
+      });
+
+      portlet.find('.portlet-toggle').on('click', function() {
+        const icon = $(this);
+        icon.toggleClass("ui-icon-minusthick ui-icon-plusthick");
+        icon.closest(".portlet").find(".portlet-content").toggle();
+      });
+    }
+
+    // Initialize sortable
+    $(".column").sortable({
+      connectWith: ".column",
+      handle: ".portlet-header",
+      cancel: ".portlet-toggle, .delete-btn, .label-select",
+      placeholder: "portlet-placeholder ui-corner-all"
+    });
+
+    // Add note buttons
+    $('.add-note-btn').on('click', function() {
+      const column = $(this).closest('.column');
+      addNoteToColumn(column, 'New Note', 'Enter content here...', 'default');
+    });
+
+    // Search functionality
+    $('#search-input').on('input', function() {
+      const query = $(this).val().toLowerCase();
+      $('.portlet').each(function() {
+        const header = $(this).find('.portlet-header-text').text().toLowerCase();
+        const content = $(this).find('.portlet-content').text().toLowerCase();
+        if (header.includes(query) || content.includes(query)) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    });
+
+    // Export layout
+    $('.export-btn').on('click', function() {
+      const layout = { columns: [] };
+      $('.column').each(function(index) {
+        const notes = [];
+        $(this).find('.portlet').each(function() {
+          notes.push({
+            header: $(this).find('.portlet-header-text').text(),
+            content: $(this).find('.portlet-content').text(),
+            label: $(this).find('.label-select').val()
+          });
+        });
+        layout.columns.push({ id: 'col-' + (index + 1), notes });
+      });
+      const dataStr = JSON.stringify(layout, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'layout.json';
+      link.click();
+    });
+
+    // Import layout
+    $('.import-btn').on('click', function() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const layout = JSON.parse(e.target.result);
+            $('.column .portlet').remove();
+            loadLayout(layout);
+          } catch (err) {
+            alert('Invalid JSON file');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    });
+
+    // Undo delete
+    $('.undo-btn').on('click', function() {
+      if (deletedNotes.length > 0) {
+        const note = deletedNotes.pop();
+        const column = $('.column').eq(note.columnIndex);
+        addNoteToColumn(column, note.header, note.content, note.label);
+        if (deletedNotes.length === 0) {
+          $(this).prop('disabled', true);
+        }
+      }
+    });
+
+    // Load initial layout
+    loadLayout(initialLayout);
+  });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search notes...">
+    </div>
+    <div class="columns">
+      <div class="column">
+        <div class="column-title">Today</div>
+        <button class="add-note-btn">Add Note</button>
+      </div>
+      <div class="column">
+        <div class="column-title">Work</div>
+        <button class="add-note-btn">Add Note</button>
+      </div>
+      <div class="column">
+        <div class="column-title">Personal</div>
+        <button class="add-note-btn">Add Note</button>
+      </div>
+      <div class="column">
+        <div class="column-title">References</div>
+        <button class="add-note-btn">Add Note</button>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="control-btn export-btn">Export Layout</button>
+      <button class="control-btn import-btn">Import Layout</button>
+      <button class="control-btn undo-btn" disabled>Undo Delete</button>
+    </div>
+  </div>
+</body>
+</html>
